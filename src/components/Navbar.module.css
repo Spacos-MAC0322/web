@@ -1,0 +1,115 @@
+/* src/components/Navbar.module.css */
+.header {
+  width: 100%;
+  background-color: var(--color-green);
+  color: var(--color-cream);
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px clamp(24px, 5vw, 64px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+.logoLink {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logoImage {
+  height: 60px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(24px, 4vw, 56px);
+}
+
+.navLink {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-sage);
+  text-decoration: none;
+  padding: 8px 12px;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--color-cream);
+}
+
+.active {
+  color: var(--color-mustard);
+  font-weight: 600;
+}
+
+.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2.5px;
+  background-color: var(--color-mustard);
+  border-radius: 2px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.profileButton {
+  width: 44px;
+  height: 44px;
+  background-color: var(--color-mustard);
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.profileButton:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-wrap: wrap;
+    padding: 14px 20px;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-around;
+    padding-top: 8px;
+    border-top: 1px solid rgba(244, 239, 230, 0.12);
+    gap: 8px;
+  }
+
+  .navLink {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+}

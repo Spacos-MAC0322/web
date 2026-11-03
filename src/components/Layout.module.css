@@ -1,0 +1,17 @@
+/* src/components/Layout.module.css */
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  width: 100%;
+  background-color: var(--color-cream);
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 48px) clamp(24px, 5vw, 64px);
+  box-sizing: border-box;
+}

@@ -1,0 +1,135 @@
+/* src/components/Footer.module.css */
+.footer {
+  width: 100%;
+  background-color: var(--color-green);
+  color: var(--color-cream);
+  margin-top: auto;
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px clamp(24px, 5vw, 64px);
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 32px;
+  box-sizing: border-box;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.primaryLink {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-cream);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.primaryLink:hover {
+  opacity: 0.85;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.socialRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.socialLabel {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-cream);
+}
+
+.socialIcons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.socialBtn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--color-sage);
+  color: var(--color-cream);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.socialBtn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+}
+
+.iconSvg {
+  width: 22px;
+  height: 22px;
+}
+
+.legalRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-cream);
+}
+
+.legalLink {
+  color: var(--color-cream);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.legalLink:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+.separator {
+  color: var(--color-cream);
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 20px;
+  }
+
+  .rightColumn {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .legalRow {
+    justify-content: flex-start;
+  }
+}
