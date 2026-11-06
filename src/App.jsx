@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AuthProvider from './components/AuthProvider';
 import Layout from './components/Layout';
 import './App.css';
 
@@ -11,17 +12,19 @@ const Login = () => <h1>Login / Criar Conta </h1>;
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Descobrir />} />
-          <Route path="explorar" element={<Explorar />} />
-          <Route path="rotas" element={<Rotas />} />
-          <Route path="salvos" element={<Salvos />} />
-          <Route path="login" element={<Login />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Descobrir />} />
+            <Route path="explorar" element={<Explorar />} />
+            <Route path="rotas" element={<Rotas />} />
+            <Route path="salvos" element={<Salvos />} />
+            <Route path="login" element={<Login />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
