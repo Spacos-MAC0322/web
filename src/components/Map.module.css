@@ -67,3 +67,18 @@
 .large {
   background: var(--color-green);
 }
+
+/* Moldura do popup do Leaflet no padrão visual do projeto; o conteúdo é o MapPopupCard. */
+.popup :global(.leaflet-popup-content-wrapper),
+.popup :global(.leaflet-popup-tip) {
+  background: var(--color-cream);
+  box-shadow: var(--shadow);
+}
+
+.popup :global(.leaflet-popup-content-wrapper) {
+  border-radius: 16px;
+}
+
+.popup :global(.leaflet-popup-content) {
+  margin: 16px 18px;
+}

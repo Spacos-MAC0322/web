@@ -3,12 +3,13 @@
 // agrupados (clustering) para manter o mapa legível e rápido com milhares de lugares.
 // O componente só desenha: quem busca os dados é o hook usePlacesInBounds, que recebe
 // os limites visíveis por `onBoundsChange` a cada movimento ou zoom.
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
+import MapPopupCard from './MapPopupCard';
 import styles from './Map.module.css';
 
 const SAO_PAULO_CENTER = [-23.5505, -46.6333];
@@ -65,16 +66,58 @@ function BoundsWatcher({ onBoundsChange }) {
 }
 
 function defaultPopup(place) {
-  return (
-    <>
-      <strong>{place.name}</strong>
-      {place.category && <div>{place.category}</div>}
-    </>
+  return <MapPopupCard place={place} />;
+}
+
+// Se o popup fechar com o foco dentro dele (botão de fechar, Esc), o foco volta ao pino
+// em vez de se perder no <body>. Fechamentos por clique em outro ponto já movem o foco.
+function returnFocusToMarker(event) {
+  const popupElement = event.popup.getElement();
+  if (popupElement?.contains(document.activeElement)) {
+    event.target.getElement()?.focus({ preventScroll: true });
+  }
+}
+
+// O React-Leaflet mantém o conteúdo do popup montado depois da primeira abertura. Por isso
+// só o popup aberto recebe conteúdo: o card é montado a cada abertura (e pega o foco) e
+// não fica um card por pino já clicado. `placeId` chega ao Leaflet como opção do Marker.
+function useOpenPlace() {
+  const [openPlaceId, setOpenPlaceId] = useState(null);
+  const markerEvents = useMemo(
+    () => ({
+      popupopen: (event) => {
+        // O Leaflet rotula o botão de fechar em inglês ("Close popup").
+        event.popup
+          .getElement()
+          ?.querySelector('.leaflet-popup-close-button')
+          ?.setAttribute('aria-label', 'Fechar card');
+        setOpenPlaceId(event.target.options.placeId);
+      },
+      popupclose: (event) => {
+        returnFocusToMarker(event);
+        const closedId = event.target.options.placeId;
+        setOpenPlaceId((current) => (current === closedId ? null : current));
+      },
+    }),
+    [],
   );
+  return { openPlaceId, markerEvents };
+}
+
+// O Leaflet só trata Esc com o foco no próprio contêiner do mapa; com o foco dentro do
+// card (que o recebe ao abrir), o Esc é tratado aqui.
+function CloseOnEscape({ children }) {
+  const map = useMap();
+  const onKeyDown = (event) => {
+    if (event.key !== 'Escape') return;
+    event.stopPropagation();
+    map.closePopup();
+  };
+  return <div onKeyDown={onKeyDown}>{children}</div>;
 }
 
 // places: [{ id, name, category, position: [lat, lng], badges }] (services/places.js).
-// renderPopup(place): conteúdo do card ao clicar no pino (MapPopupCard, issue #26).
+// renderPopup(place): conteúdo do card ao clicar no pino; padrão: MapPopupCard (#26).
 export default function PlacesMap({
   places = [],
   onBoundsChange,
@@ -83,6 +126,7 @@ export default function PlacesMap({
   zoom = DEFAULT_ZOOM,
   className = '',
 }) {
+  const { openPlaceId, markerEvents } = useOpenPlace();
   return (
     <div
       role="region"
@@ -107,8 +151,14 @@ export default function PlacesMap({
               position={place.position}
               icon={pinIcon}
               title={place.name}
+              placeId={place.id}
+              eventHandlers={markerEvents}
             >
-              <Popup>{renderPopup(place)}</Popup>
+              <Popup className={styles.popup} minWidth={200} maxWidth={280}>
+                {openPlaceId === place.id && (
+                  <CloseOnEscape>{renderPopup(place)}</CloseOnEscape>
+                )}
+              </Popup>
             </Marker>
           ))}
         </MarkerClusterGroup>
