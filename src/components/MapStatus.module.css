@@ -1,0 +1,55 @@
+/* Sobre o mapa, ao lado dos botões de zoom (canto superior direito). */
+.overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 60px;
+  z-index: 1000; /* acima dos painéis do Leaflet */
+  display: flex;
+  justify-content: center;
+  pointer-events: none; /* não bloqueia o arraste do mapa ao redor do aviso */
+}
+
+.pill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: var(--color-cream);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.error {
+  color: var(--error-text);
+}
+
+.retry {
+  padding: 4px 14px;
+  border: 2px solid var(--color-green);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-green);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retry:hover {
+  background: var(--accent-bg);
+}
+
+.retry:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}

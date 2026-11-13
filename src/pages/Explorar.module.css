@@ -1,0 +1,16 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vw, 28px);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 48px);
+  line-height: 1.1;
+}
+
+/* Altura própria: a página rola normalmente até o rodapé, como no protótipo. */
+.map {
+  height: clamp(420px, 70svh, 760px);
+}

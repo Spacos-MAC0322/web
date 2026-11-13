@@ -1,0 +1,123 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(40px, 8vw, 96px);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(32px, 6vw, 56px);
+  line-height: 1.1;
+}
+
+/* Ilustração à esquerda e texto à direita (protótipo); empilhados no celular. */
+.mapSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(48px, 7vw, 96px);
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Os enfeites saem da imagem por --offset; as margens os mantêm dentro da página. */
+.visual {
+  --offset: clamp(14px, 2.2vw, 28px);
+
+  position: relative;
+  isolation: isolate;
+  margin: var(--offset) var(--offset) var(--offset) 0;
+}
+
+.visual::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: calc(-1 * var(--offset));
+  right: calc(-1 * var(--offset));
+  width: 34%;
+  height: 46%;
+  border-radius: 28px;
+  background: var(--color-terracotta);
+}
+
+.mapImageLink {
+  display: block;
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+.mapImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+}
+
+.tag {
+  position: absolute;
+  left: 0;
+  bottom: calc(-1 * var(--offset) - 1.8vw);
+  padding: clamp(10px, 3.5vw, 50px) clamp(22px, 4vw, 46px);
+  border-radius: 999px;
+  background: var(--color-sage);
+  color: var(--color-green);
+  font-family: var(--heading);
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 700;
+  transform: translateX(-22%);
+  pointer-events: none;
+
+  @media (max-width: 768px) {
+    transform: none;
+  }
+}
+
+
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sectionTitle {
+  align-self: stretch;
+  margin: 0;
+  font-size: clamp(26px, 4vw, 48px);
+  line-height: 1.1;
+  text-align: right;
+
+  @media (max-width: 768px) {
+    text-align: left;
+  }
+}
+
+.lead {
+  font-size: 16px;
+}
+
+/* Mesmo estilo do botão "Criar uma rota" do protótipo. */
+.mapLink {
+  margin-top: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: var(--color-green);
+  color: var(--color-cream);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.mapLink:hover {
+  background: var(--color-green-hover);
+}
+
+.mapLink:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
