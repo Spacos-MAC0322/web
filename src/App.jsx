@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AuthProvider from './components/AuthProvider';
 import Layout from './components/Layout';
+import Descobrir from './pages/Descobrir';
+import Explorar from './pages/Explorar';
 import Login from './pages/Login';
 import './App.css';
 
 // Mocks provisórios para as páginas
-const Descobrir = () => <h1> O que você quer descobrir na cidade hoje? :) </h1>;
-const Explorar = () => <h1>Mapa Interativo :P</h1>;
 const Rotas = () => <h1>Planejamento de Rotas :o</h1>;
 const Salvos = () => <h1> Meus Lugares Salvos S2 </h1>;
 const Lugar = () => <h1>Detalhes do lugar :)</h1>; // substituída pela página da issue #2

@@ -17,3 +17,6 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
     disconnect() {}
   };
 }
+
+// O jsdom não implementa window.scrollTo; o Leaflet o chama ao focar o mapa num clique.
+window.scrollTo = () => {};

@@ -35,10 +35,11 @@
   color: var(--color-cream);
   font-weight: 600;
   text-decoration: none;
+  transition: background-color 0.15s ease;
 }
 
 .card .detailsButton:hover {
-  background: var(--color-graphite);
+  background: var(--color-green-hover);
 }
 
 .card .detailsButton:focus-visible {

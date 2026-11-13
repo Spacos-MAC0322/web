@@ -5,7 +5,15 @@
 // os limites visíveis por `onBoundsChange` a cada movimento ou zoom.
 import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  ZoomControl,
+  useMap,
+  useMapEvents,
+} from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
@@ -140,9 +148,12 @@ export default function PlacesMap({
         maxZoom={MAX_ZOOM}
         maxBounds={MAX_BOUNDS}
         maxBoundsViscosity={1}
+        zoomControl={false}
         className={styles.map}
       >
         <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
+        {/* Botões de zoom no canto superior direito, como no protótipo. */}
+        <ZoomControl position="topright" zoomInTitle="Aproximar" zoomOutTitle="Afastar" />
         <BoundsWatcher onBoundsChange={onBoundsChange} />
         <MarkerClusterGroup chunkedLoading iconCreateFunction={createClusterIcon}>
           {places.map((place) => (

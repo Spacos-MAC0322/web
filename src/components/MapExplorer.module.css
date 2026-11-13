@@ -1,0 +1,11 @@
+/* O MapStatus é posicionado sobre o mapa em relação a este contêiner. */
+.explorer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+.map {
+  flex: 1;
+}

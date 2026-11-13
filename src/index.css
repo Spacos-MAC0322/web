@@ -8,6 +8,7 @@
   --color-terracotta: #C86D51;
   --color-graphite: #272824;
   --color-sage: #A9BA9D;
+  --color-green-hover: #2A5C43; /* verde clareado: hover de botões verdes (texto creme 6,8:1) */
 
   /* Semantic tokens shared with the existing components. */
   --text: var(--color-graphite);
@@ -18,6 +19,7 @@
   --accent: var(--color-green);
   --accent-secondary: var(--color-mustard);
   --accent-tertiary: var(--color-terracotta);
+  --error-text: #8f3f28; /* terracota escurecida: contraste AA sobre fundo claro */
   --accent-bg: rgba(27, 59, 43, 0.1);
   --accent-border: rgba(27, 59, 43, 0.5);
   --social-bg: rgba(169, 186, 157, 0.25);
@@ -45,6 +47,19 @@
 
 body {
   margin: 0;
+}
+
+/* Oculta visualmente, mas mantém o conteúdo para leitores de tela. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 button,

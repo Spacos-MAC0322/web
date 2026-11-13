@@ -1,6 +1,5 @@
 /* src/pages/Login.module.css */
 .page {
-  --error-text: #8f3f28; /* terracota escurecida: contraste AA sobre fundo claro */
   --surface: #fffdf9;
 
   display: flex;
@@ -122,6 +121,11 @@
   border: 0;
   background-color: var(--color-green);
   color: var(--color-cream);
+  transition: background-color 0.15s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background-color: var(--color-green-hover);
 }
 
 .primaryButton:disabled {
