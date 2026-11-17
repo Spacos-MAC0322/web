@@ -3,6 +3,11 @@
 // O backend já devolve apenas lugares publicados e com coordenadas válidas.
 import api from './api';
 
+// Ids vêm do backend no formato "provedor:tipo:id" e precisam ser codificados na URL.
+export function placePath(id) {
+  return `/lugar/${encodeURIComponent(id)}`;
+}
+
 const COORDINATE_DECIMALS = 5; // ~1 m: evita requisições repetidas por ruído de ponto flutuante.
 
 function round(value) {

@@ -1,0 +1,28 @@
+.message {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0;
+  color: var(--error-text);
+}
+
+.retry {
+  padding: 4px 14px;
+  border: 2px solid var(--color-green);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-green);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retry:hover {
+  background: var(--accent-bg);
+}
+
+.retry:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
