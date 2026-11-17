@@ -49,6 +49,25 @@ function toPin(place) {
   };
 }
 
+// Card da seleção "Fora do óbvio" (#52): textos curtos do espaço, sem coordenadas.
+function toCard(place) {
+  return {
+    id: place.id,
+    name: place.name,
+    category: place.primary_category ?? null,
+    neighborhood: place.neighborhood ?? null,
+    summary: place.short_description ?? null,
+    badges: place.badges ?? {},
+  };
+}
+
+// Seleção "Fora do óbvio" (#53): espaços com curadoria positiva, já ordenados pelo backend
+// alternando as zonas da cidade.
+export async function fetchDiscoverPlaces({ signal } = {}) {
+  const { data } = await api.get('/api/search/discover', { signal });
+  return Array.isArray(data) ? data.map(toCard) : [];
+}
+
 export async function fetchPlacesInBounds(boundsParams, { signal } = {}) {
   const { data } = await api.get('/api/places', { params: boundsParams, signal });
   return Array.isArray(data) ? data.map(toPin).filter(Boolean) : [];

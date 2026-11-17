@@ -1,7 +1,13 @@
 import { LatLngBounds } from 'leaflet';
 import { describe, expect, it, vi } from 'vitest';
 import api from './api';
-import { fetchPlaceDetail, fetchPlacesInBounds, placePath, toBoundsParams } from './places';
+import {
+  fetchDiscoverPlaces,
+  fetchPlaceDetail,
+  fetchPlacesInBounds,
+  placePath,
+  toBoundsParams,
+} from './places';
 
 const bounds = (south, west, north, east) => new LatLngBounds([south, west], [north, east]);
 
@@ -95,5 +101,42 @@ describe('fetchPlaceDetail', () => {
 describe('placePath', () => {
   it('monta o caminho da página do lugar com o id codificado', () => {
     expect(placePath('mapas_saas:space:31')).toBe('/lugar/mapas_saas%3Aspace%3A31');
+  });
+});
+
+describe('fetchDiscoverPlaces', () => {
+  it('consulta GET /api/search/discover e converte cada espaço em card', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({
+      data: [
+        {
+          id: 'a',
+          name: 'Casa A',
+          primary_category: 'Casa de Cultura',
+          location: { type: 'Point', coordinates: [-46.7, -23.5] },
+          badges: { hidden_gem: true },
+          neighborhood: 'Butantã',
+          short_description: 'Oficinas.',
+        },
+        { id: 'b', name: 'Casa B' },
+      ],
+    });
+    const { signal } = new AbortController();
+    await expect(fetchDiscoverPlaces({ signal })).resolves.toEqual([
+      {
+        id: 'a',
+        name: 'Casa A',
+        category: 'Casa de Cultura',
+        neighborhood: 'Butantã',
+        summary: 'Oficinas.',
+        badges: { hidden_gem: true },
+      },
+      { id: 'b', name: 'Casa B', category: null, neighborhood: null, summary: null, badges: {} },
+    ]);
+    expect(get).toHaveBeenCalledWith('/api/search/discover', { signal });
+  });
+
+  it('devolve lista vazia para respostas inesperadas', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({ data: null });
+    await expect(fetchDiscoverPlaces()).resolves.toEqual([]);
   });
 });

@@ -21,4 +21,26 @@ describe('PlaceTag', () => {
     });
     expect(withIcon).toEqual(['accessible', 'free', 'hidden']);
   });
+
+  it('aceita um ícone próprio (ex.: o da categoria)', () => {
+    const icon = { src: '/arte.svg', width: 16, height: 16 };
+    const { container } = render(
+      <PlaceTag variant="category" icon={icon}>
+        Museu
+      </PlaceTag>,
+    );
+    expect(container.querySelector('img')).toHaveAttribute('src', '/arte.svg');
+  });
+
+  it('pode ser um link, repassando os atributos', () => {
+    render(
+      <PlaceTag as="a" variant="hidden" href="#fora-do-obvio">
+        Fora do óbvio
+      </PlaceTag>,
+    );
+    expect(screen.getByRole('link', { name: 'Fora do óbvio' })).toHaveAttribute(
+      'href',
+      '#fora-do-obvio',
+    );
+  });
 });

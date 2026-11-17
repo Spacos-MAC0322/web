@@ -44,3 +44,18 @@
   flex-shrink: 0;
   margin: -1px;
 }
+
+/* Etiquetas clicáveis (ex.: filtro rápido "Fora do óbvio"). */
+a.tag {
+  text-decoration: none;
+  transition: filter 0.15s ease;
+}
+
+a.tag:hover {
+  filter: brightness(0.93);
+}
+
+a.tag:focus-visible {
+  outline: 3px solid var(--color-green);
+  outline-offset: 2px;
+}
