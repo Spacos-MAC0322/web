@@ -1,0 +1,46 @@
+/* Tags do protótipo: 38 px de altura, cantos de 19 px, Inter semibold 13 px. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 19px;
+  color: var(--color-graphite);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.category {
+  background: var(--color-mustard);
+}
+
+.accessible {
+  background: var(--color-sage);
+}
+
+.hidden {
+  background: var(--color-terracotta);
+  color: var(--color-cream);
+}
+
+.free,
+.neutral {
+  border-color: var(--color-sage);
+  background: var(--color-surface);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* O ícone de acessibilidade tem 18 px num espaço de 16 px no protótipo. */
+.iconBleed {
+  flex-shrink: 0;
+  margin: -1px;
+}

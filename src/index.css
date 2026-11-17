@@ -8,6 +8,7 @@
   --color-terracotta: #C86D51;
   --color-graphite: #272824;
   --color-sage: #A9BA9D;
+  --color-surface: #FFFDF8; /* fundo de cards e tags claras do protótipo */
   --color-green-hover: #2A5C43; /* verde clareado: hover de botões verdes (texto creme 6,8:1) */
 
   /* Semantic tokens shared with the existing components. */

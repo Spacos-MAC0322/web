@@ -55,13 +55,14 @@ describe('página Lugar', () => {
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(PLACE.name);
   });
 
-  it('mostra cabeçalho, descrição, selos e a fonte dos dados', async () => {
+  it('mostra nome, bairro · categoria, etiquetas, descrição e a fonte dos dados', async () => {
     renderAt();
     const article = await screen.findByRole('article', { name: PLACE.name });
-    expect(within(article).getByText('Casa de Cultura')).toBeInTheDocument();
+    expect(within(article).getByText('Butantã · Casa de Cultura')).toBeInTheDocument();
     expect(within(article).getByText('Oficinas, shows e exposições.')).toBeInTheDocument();
-    const badges = within(article).getByRole('list', { name: 'Selos do espaço' });
-    expect(within(badges).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+    const tags = within(article).getByRole('list', { name: 'Etiquetas do espaço' });
+    expect(within(tags).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Grátis',
       'Fora do óbvio',
     ]);
     expect(within(article).getByRole('link', { name: /Mapas Culturais/ })).toHaveAttribute(
@@ -70,16 +71,30 @@ describe('página Lugar', () => {
     );
   });
 
-  it('mostra endereço, horários por dia, entrada grátis e contato', async () => {
+  it('repete o nome só visualmente, sem duplicar o título para leitores de tela', async () => {
     renderAt();
-    await screen.findByRole('article');
-    expect(screen.getByText('Av. Junta Mizumoto, 13 - Butantã')).toBeInTheDocument();
-    expect(screen.getByText('Ter a sex: 9h às 21h')).toBeInTheDocument();
-    expect(screen.getByText('Sáb: 10h às 18h')).toBeInTheDocument();
-    expect(screen.getByText(/não confirmado/)).toBeInTheDocument();
-    expect(screen.getByText('Grátis')).toBeInTheDocument();
-    expect(screen.getByText('Entrada gratuita')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Site oficial/ })).toHaveAttribute(
+    const titles = await screen.findAllByText(PLACE.name);
+    expect(titles).toHaveLength(2);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(PLACE.name);
+    expect(titles.find((title) => title.tagName === 'P')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('volta para Explorar pelo link acima do conteúdo', async () => {
+    renderAt();
+    await userEvent.click(await screen.findByRole('link', { name: 'Voltar para Explorar' }));
+    expect(screen.getByText('Página Explorar')).toBeInTheDocument();
+  });
+
+  it('mostra horário, entrada, acessibilidade, endereço e contato no card', async () => {
+    renderAt();
+    const card = await screen.findByRole('region', { name: 'Planeje sua visita' });
+    expect(within(card).getByText('Av. Junta Mizumoto, 13 - Butantã')).toBeInTheDocument();
+    expect(within(card).getByText('Ter a sex: 9h às 21h')).toBeInTheDocument();
+    expect(within(card).getByText('Sáb: 10h às 18h')).toBeInTheDocument();
+    expect(within(card).getByText(/não confirmado/)).toBeInTheDocument();
+    expect(within(card).getByText('Entrada gratuita')).toBeInTheDocument();
+    expect(within(card).getByText('Não informado')).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: /Site oficial/ })).toHaveAttribute(
       'href',
       'https://casa.example',
     );
@@ -98,6 +113,7 @@ describe('página Lugar', () => {
     expect(screen.getByText('Horário não informado')).toBeInTheDocument();
     expect(screen.getByText('Valor não informado')).toBeInTheDocument();
     expect(screen.queryByText('Contato')).not.toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Etiquetas do espaço' })).not.toBeInTheDocument();
   });
 
   it('mostra a programação do espaço junto com os detalhes', async () => {

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  admissionText,
+  describeAccessibility,
   describeAdmission,
   openingHoursLines,
   phoneHref,
-  placeBadgeLabels,
+  placeTags,
   safeWebsite,
   sourceLinks,
 } from './placeFormat';
@@ -55,10 +57,60 @@ describe('openingHoursLines', () => {
   });
 });
 
-describe('placeBadgeLabels', () => {
-  it('lista só os selos confirmados', () => {
-    const badges = { hidden_gem: true, pet_friendly: false, wheelchair: null, family_friendly: true };
-    expect(placeBadgeLabels(badges)).toEqual(['Fora do óbvio', 'Bom para famílias']);
+describe('admissionText', () => {
+  it('usa o texto da fonte, "Gratuita" quando só a gratuidade é conhecida, ou null', () => {
+    expect(admissionText({ price_text: 'R$ 20' })).toBe('R$ 20');
+    expect(admissionText({ is_free: true })).toBe('Gratuita');
+    expect(admissionText({})).toBeNull();
+  });
+});
+
+describe('placeTags', () => {
+  it('lista as etiquetas confirmadas na ordem do protótipo', () => {
+    const place = {
+      badges: { hidden_gem: true, wheelchair: true, pet_friendly: false, family_friendly: true },
+      admission: { price_text: 'Entrada gratuita' },
+    };
+    expect(placeTags(place)).toEqual([
+      { variant: 'accessible', label: 'Acessível' },
+      { variant: 'free', label: 'Grátis' },
+      { variant: 'hidden', label: 'Fora do óbvio' },
+      { variant: 'neutral', label: 'Bom para famílias' },
+    ]);
+  });
+
+  it('não cria etiquetas sem selos confirmados', () => {
+    expect(placeTags({ badges: { wheelchair: null, is_free: false } })).toEqual([]);
+    expect(placeTags({})).toEqual([]);
+  });
+});
+
+describe('describeAccessibility', () => {
+  it('junta os recursos confirmados numa frase e separa as observações', () => {
+    expect(
+      describeAccessibility(
+        {
+          wheelchair: true,
+          adapted_restroom: true,
+          physical_features: ['rampa'],
+          notes: 'Elevador',
+        },
+        'Piso tátil na entrada',
+      ),
+    ).toEqual({
+      text: 'Acessível para cadeira de rodas, banheiro adaptado, rampa',
+      notes: ['Elevador', 'Piso tátil na entrada'],
+    });
+  });
+
+  it('informa quando a fonte só declara acessibilidade, e null quando nada foi informado', () => {
+    expect(describeAccessibility({ declared: true }).text).toBe(
+      'Acessibilidade declarada pela fonte',
+    );
+    expect(describeAccessibility({ wheelchair: false }).text).toBe(
+      'Sem acesso para cadeira de rodas',
+    );
+    expect(describeAccessibility()).toEqual({ text: null, notes: [] });
   });
 });
 

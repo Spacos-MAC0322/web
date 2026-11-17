@@ -1,5 +1,6 @@
 // src/pages/placeFormat.js
 // Textos da página de detalhes do lugar a partir do JSON de GET /api/places/{id}.
+// Admission/acessibilidade alimentam o card "Planeje sua visita" do protótipo.
 // O backend não infere o que a fonte não informa: campos ausentes viram "não informado".
 
 const FREE_ADMISSION = /\b(gr[aá]tis|gratuit[oa]|entrada (franca|livre))\b/i;
@@ -44,19 +45,48 @@ export function openingHoursLines(openingHours = {}) {
     .filter(Boolean);
 }
 
-const BADGE_LABELS = {
-  hidden_gem: 'Fora do óbvio',
-  wheelchair: 'Acessível para cadeira de rodas',
-  pet_friendly: 'Pet-friendly',
-  family_friendly: 'Bom para famílias',
-  lgbtqia_inclusion: 'Espaço seguro LGBTQIAP+',
-};
+// Valor da linha "Entrada": o texto da fonte, ou "Gratuita" quando só se sabe que é grátis.
+export function admissionText(admission) {
+  const { isFree, text } = describeAdmission(admission);
+  return text ?? (isFree ? 'Gratuita' : null);
+}
 
-// Só selos confirmados (true); false e null não viram selo.
-export function placeBadgeLabels(badges = {}) {
-  return Object.entries(BADGE_LABELS)
-    .filter(([key]) => badges[key] === true)
-    .map(([, label]) => label);
+const EXTRA_TAGS = [
+  ['pet_friendly', 'Pet-friendly'],
+  ['family_friendly', 'Bom para famílias'],
+  ['lgbtqia_inclusion', 'Espaço seguro LGBTQIAP+'],
+];
+
+// Etiquetas do espaço na ordem do protótipo: Acessível, Grátis, Fora do óbvio e os demais
+// selos de curadoria. Só selos confirmados (true) viram etiqueta; false e null, não.
+export function placeTags(place) {
+  const badges = place.badges ?? {};
+  const tags = [];
+  if (badges.wheelchair === true) tags.push({ variant: 'accessible', label: 'Acessível' });
+  if (badges.is_free === true || describeAdmission(place.admission).isFree) {
+    tags.push({ variant: 'free', label: 'Grátis' });
+  }
+  if (badges.hidden_gem === true) tags.push({ variant: 'hidden', label: 'Fora do óbvio' });
+  for (const [key, label] of EXTRA_TAGS) {
+    if (badges[key] === true) tags.push({ variant: 'neutral', label });
+  }
+  return tags;
+}
+
+// Linha "Acessibilidade": recursos confirmados pela fonte, mais as observações da fonte e
+// da curadoria. `text` é null quando nada foi informado.
+export function describeAccessibility(accessibility = {}, curationNotes = null) {
+  const parts = [];
+  if (accessibility.wheelchair === true) parts.push('acessível para cadeira de rodas');
+  if (accessibility.wheelchair === false) parts.push('sem acesso para cadeira de rodas');
+  if (accessibility.adapted_restroom === true) parts.push('banheiro adaptado');
+  parts.push(...(accessibility.physical_features ?? []));
+  if (parts.length === 0 && accessibility.declared === true) {
+    parts.push('acessibilidade declarada pela fonte');
+  }
+  const joined = parts.join(', ');
+  const text = joined ? joined[0].toUpperCase() + joined.slice(1) : null;
+  return { text, notes: [accessibility.notes, curationNotes].filter(Boolean) };
 }
 
 // Links só para http(s): o site vem da fonte e não pode virar "javascript:".

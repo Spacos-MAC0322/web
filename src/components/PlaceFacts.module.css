@@ -1,24 +1,43 @@
+/* Card "Planeje sua visita" (Figma "Info card"): fundo claro, cantos de 22 px, linhas com
+   rótulo em negrito à esquerda (128 px) e valor em verde. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 26px 32px;
+  border-radius: 22px;
+  background: var(--color-surface);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
 .facts {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   margin: 0;
-  padding: clamp(20px, 3vw, 28px);
-  border-radius: 20px;
-  background: var(--social-bg);
 }
 
 .fact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  column-gap: 0;
+  row-gap: 4px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .term {
-  color: var(--color-green);
-  font-family: var(--heading);
-  font-size: 18px;
+  color: var(--color-graphite);
+  font-size: 13px;
   font-weight: 700;
+  line-height: 18px;
 }
 
 .value {
@@ -27,38 +46,34 @@
   align-items: flex-start;
   gap: 4px;
   margin: 0;
-  font-size: 16px;
+  color: var(--color-green);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
   overflow-wrap: anywhere;
 }
 
-.hours {
+.lines {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .note {
-  color: var(--text);
-  font-size: 14px;
-  opacity: 0.85;
+  color: var(--color-graphite);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .missing {
-  font-style: italic;
-  opacity: 0.85;
-}
-
-.free {
-  padding: 2px 12px;
-  border-radius: 999px;
-  background: var(--color-mustard);
   color: var(--color-graphite);
-  font-weight: 700;
+  font-style: italic;
+  font-weight: 400;
 }
 
 .link {
   color: var(--color-green);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .link:focus-visible {

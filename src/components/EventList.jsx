@@ -77,7 +77,9 @@ export default function EventList({ events }) {
   }
   return (
     <section className={styles.section} aria-labelledby={titleId}>
-      <h2 id={titleId}>Programação em cartaz</h2>
+      <h2 id={titleId} className={styles.heading}>
+        Programação em cartaz
+      </h2>
       {content}
     </section>
   );

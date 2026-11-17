@@ -1,141 +1,90 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: clamp(28px, 5vw, 56px);
+  gap: clamp(32px, 5vw, 56px);
 }
 
-/* Ilustração e título lado a lado; empilhados no celular. */
-.header {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  align-items: center;
-  gap: clamp(24px, 5vw, 64px);
+/* No protótipo, "← Explorar" fica ~100 px abaixo da faixa e o conteúdo, 50 px abaixo dele. */
+.toolbar {
+  margin-top: clamp(0px, 3vw, 44px);
+}
 
-  @media (max-width: 768px) {
+.backLink {
+  color: var(--color-green);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.backLink:focus-visible,
+.sources a:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+/* Colunas de 544 e 695 px no protótipo; empilhadas no celular. */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 544fr) minmax(0, 695fr);
+  align-items: start;
+  gap: clamp(32px, 5.5vw, 77px);
+
+  @media (max-width: 900px) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.art {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 4 / 3;
-  border-radius: 24px;
-  background: var(--color-green);
-  box-shadow: var(--shadow);
-
-  @media (max-width: 768px) {
-    aspect-ratio: 2 / 1;
-  }
-}
-
-.artSun {
-  position: absolute;
-  top: 16%;
-  right: 14%;
-  width: 28%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-mustard);
-}
-
-.artHill {
-  position: absolute;
-  left: -10%;
-  bottom: -35%;
-  width: 90%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-terracotta);
-}
-
-.heading {
+.intro {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 25px;
 }
 
-.tag {
-  padding: 4px 14px;
-  border-radius: 999px;
-  background: var(--color-sage);
+.name {
   color: var(--color-green);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.title {
-  margin: 0;
-  font-size: clamp(32px, 5vw, 56px);
-  line-height: 1.1;
+  font-family: var(--heading);
+  font-size: clamp(32px, 3.1vw, 44px);
+  font-weight: 700;
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 
-.neighborhood {
-  font-size: 18px;
+.subtitle {
+  font-size: 17px;
 }
 
-.badges {
+.tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 15px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.badge {
-  padding: 4px 12px;
-  border: 1px solid var(--accent-border);
-  border-radius: 999px;
-  color: var(--color-green);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.columns {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  align-items: start;
-  gap: clamp(24px, 5vw, 64px);
-
-  @media (max-width: 768px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.about {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .description {
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.4;
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
 
 .missing {
   font-style: italic;
-  opacity: 0.85;
 }
 
 .sources {
   font-size: 14px;
-  opacity: 0.85;
 }
 
-.sources a,
-.backLink {
+.sources a {
   color: var(--color-green);
   font-weight: 600;
-}
-
-.sources a:focus-visible,
-.backLink:focus-visible {
-  outline: 3px solid var(--color-mustard);
-  outline-offset: 2px;
 }
 
 .state {

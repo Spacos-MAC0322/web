@@ -8,10 +8,14 @@
 }
 
 .mainContent {
+  /* Expostos para páginas com faixas de ponta a ponta (ex.: cabeçalho da página do lugar). */
+  --page-pad-y: clamp(24px, 4vw, 48px);
+  --page-pad-x: clamp(24px, 5vw, 64px);
+
   flex: 1;
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: clamp(24px, 4vw, 48px) clamp(24px, 5vw, 64px);
+  padding: var(--page-pad-y) var(--page-pad-x);
   box-sizing: border-box;
 }
