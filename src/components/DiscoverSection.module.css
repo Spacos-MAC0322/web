@@ -1,0 +1,48 @@
+/* Frame "Fora do Óbvio" do protótipo: título Fraunces 27 px, nota 14 px e cards de 610 px
+   em duas colunas (50 px entre colunas, 32 px entre linhas). */
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  scroll-margin-top: 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 27px;
+  line-height: 1.2;
+}
+
+.title:focus {
+  outline: none;
+}
+
+.title:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 4px;
+}
+
+.note {
+  margin-top: -8px;
+  color: var(--color-graphite);
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 50px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.message {
+  font-size: 16px;
+}

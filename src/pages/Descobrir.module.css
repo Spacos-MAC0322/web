@@ -121,3 +121,26 @@
   outline: 3px solid var(--color-mustard);
   outline-offset: 2px;
 }
+
+/* "Explore por interesse": título Fraunces 30 px e pílulas na mesma linha (protótipo). */
+.interests {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 45px;
+}
+
+.interestsTitle {
+  margin: 0;
+  font-size: clamp(24px, 2.1vw, 30px);
+  line-height: 1.2;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 45px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

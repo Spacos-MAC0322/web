@@ -5,6 +5,7 @@
 // também avisa que a informação pode estar incompleta; `events` ausente indica falha.
 import { useId, useState } from 'react';
 import { formatEventWhen, sortEventsByStart } from './eventDates';
+import ShowAllToggle from './ShowAllToggle';
 import styles from './EventList.module.css';
 
 const INITIAL_COUNT = 6;
@@ -30,26 +31,25 @@ function Notice({ children }) {
 }
 
 function EventItems({ events }) {
+  const listId = useId();
   const [showAll, setShowAll] = useState(false);
   const sorted = sortEventsByStart(events);
   const visible = showAll ? sorted : sorted.slice(0, INITIAL_COUNT);
   return (
     <>
-      <ul className={styles.list}>
+      <ul id={listId} className={styles.list}>
         {visible.map((event, index) => (
           <EventItem key={`${index}-${event.title}`} event={event} />
         ))}
       </ul>
-      {sorted.length > INITIAL_COUNT && (
-        <button
-          type="button"
-          className={styles.toggle}
-          aria-expanded={showAll}
-          onClick={() => setShowAll((current) => !current)}
-        >
-          {showAll ? 'Mostrar menos' : `Ver toda a programação (${sorted.length})`}
-        </button>
-      )}
+      <ShowAllToggle
+        total={sorted.length}
+        limit={INITIAL_COUNT}
+        expanded={showAll}
+        onToggle={() => setShowAll((current) => !current)}
+        label="Ver toda a programação"
+        controls={listId}
+      />
     </>
   );
 }
