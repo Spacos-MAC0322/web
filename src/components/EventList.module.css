@@ -62,25 +62,3 @@
   background: var(--color-surface);
   font-size: 16px;
 }
-
-/* Botão secundário no formato dos botões do protótipo (50 px, cantos de 16 px). */
-.toggle {
-  min-height: 50px;
-  padding: 0 22px;
-  border: 2px solid var(--color-green);
-  border-radius: 16px;
-  background: transparent;
-  color: var(--color-green);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.toggle:hover {
-  background: var(--accent-bg);
-}
-
-.toggle:focus-visible {
-  outline: 3px solid var(--color-mustard);
-  outline-offset: 2px;
-}

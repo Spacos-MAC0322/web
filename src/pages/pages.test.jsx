@@ -1,14 +1,16 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Layout from '../components/Layout';
-import { fetchPlacesInBounds } from '../services/places';
+import { fetchDiscoverPlaces, fetchPlacesInBounds } from '../services/places';
 import Descobrir from './Descobrir';
 import Explorar from './Explorar';
 
 vi.mock('../services/places', async (importOriginal) => ({
   ...(await importOriginal()),
   fetchPlacesInBounds: vi.fn(),
+  fetchDiscoverPlaces: vi.fn(),
 }));
 
 function renderAt(path) {
@@ -30,6 +32,10 @@ describe('páginas com mapa', () => {
   beforeEach(() => {
     fetchPlacesInBounds.mockReset();
     fetchPlacesInBounds.mockResolvedValue([]);
+    fetchDiscoverPlaces.mockReset();
+    fetchDiscoverPlaces.mockResolvedValue([
+      { id: 'a', name: 'Casa de Cultura do Butantã', category: 'Casa de Cultura' },
+    ]);
   });
 
   it('Explorar mostra o título e o mapa dentro do layout padrão', () => {
@@ -57,5 +63,22 @@ describe('páginas com mapa', () => {
     expect(image.closest('a')).toHaveAttribute('tabindex', '-1');
     expect(screen.queryByRole('region', MAP_REGION)).not.toBeInTheDocument();
     expect(fetchPlacesInBounds).not.toHaveBeenCalled();
+  });
+
+  it('Descobrir mostra a seção "Fora do óbvio" com a seleção do backend', async () => {
+    renderAt('/');
+    const section = screen.getByRole('region', { name: 'Fora do óbvio' });
+    expect(
+      await within(section).findByRole('link', { name: 'Casa de Cultura do Butantã' }),
+    ).toHaveAttribute('href', '/lugar/a');
+  });
+
+  it('o filtro rápido "Fora do óbvio" leva o foco até a seção', async () => {
+    renderAt('/');
+    const interests = screen.getByRole('region', { name: 'Explore por interesse' });
+    const pill = within(interests).getByRole('link', { name: 'Fora do óbvio' });
+    expect(pill).toHaveAttribute('href', '#fora-do-obvio');
+    await userEvent.click(pill);
+    expect(screen.getByRole('heading', { level: 2, name: 'Fora do óbvio' })).toHaveFocus();
   });
 });
