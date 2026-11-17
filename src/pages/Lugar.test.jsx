@@ -100,6 +100,16 @@ describe('página Lugar', () => {
     expect(screen.queryByText('Contato')).not.toBeInTheDocument();
   });
 
+  it('mostra a programação do espaço junto com os detalhes', async () => {
+    fetchPlaceDetail.mockResolvedValue({
+      ...PLACE,
+      events: [{ title: 'Sarau da Quebrada', starts_at: '2099-11-20' }],
+    });
+    renderAt();
+    const events = await screen.findByRole('region', { name: 'Programação em cartaz' });
+    expect(within(events).getByRole('heading', { name: 'Sarau da Quebrada' })).toBeVisible();
+  });
+
   it('mostra "Espaço não encontrado" para 404, com link de volta ao mapa', async () => {
     fetchPlaceDetail.mockRejectedValue(
       new ApiError('Espaço não encontrado.', { kind: ApiErrorKind.CLIENT, status: 404 }),

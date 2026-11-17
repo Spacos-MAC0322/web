@@ -1,9 +1,10 @@
 // src/pages/Lugar.jsx
 // Página de detalhes de um espaço cultural (/lugar/:id, issue #32): cabeçalho com
-// ilustração, descrição, endereço, horários e entrada. Os dados vêm de GET /api/places/{id},
-// que já reúne o dado aberto e a curadoria (DA06).
+// ilustração, descrição, endereço, horários, entrada e programação vigente (#33). Os dados
+// vêm de GET /api/places/{id}, que já reúne o dado aberto e a curadoria (DA06).
 import { useCallback, useId } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import EventList from '../components/EventList';
 import PlaceFacts from '../components/PlaceFacts';
 import RequestError from '../components/RequestError';
 import useApiRequest, { RequestStatus } from '../hooks/useApiRequest';
@@ -103,6 +104,7 @@ function PlaceDetail({ place }) {
         </section>
         <PlaceFacts place={place} />
       </div>
+      <EventList events={place.events} />
       <Sources sources={place.sources} />
     </article>
   );
