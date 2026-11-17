@@ -1,7 +1,7 @@
 import { LatLngBounds } from 'leaflet';
 import { describe, expect, it, vi } from 'vitest';
 import api from './api';
-import { fetchPlacesInBounds, toBoundsParams } from './places';
+import { fetchPlaceDetail, fetchPlacesInBounds, placePath, toBoundsParams } from './places';
 
 const bounds = (south, west, north, east) => new LatLngBounds([south, west], [north, east]);
 
@@ -79,5 +79,21 @@ describe('fetchPlacesInBounds', () => {
     const failure = new Error('falhou');
     vi.spyOn(api, 'get').mockRejectedValue(failure);
     await expect(fetchPlacesInBounds(params)).rejects.toBe(failure);
+  });
+});
+
+describe('fetchPlaceDetail', () => {
+  it('consulta GET /api/places/{id} com o id codificado e devolve o JSON do backend', async () => {
+    const detail = { id: 'mapas_saas:space:31', name: 'Museu' };
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: detail });
+    const { signal } = new AbortController();
+    await expect(fetchPlaceDetail('mapas_saas:space:31', { signal })).resolves.toBe(detail);
+    expect(get).toHaveBeenCalledWith('/api/places/mapas_saas%3Aspace%3A31', { signal });
+  });
+});
+
+describe('placePath', () => {
+  it('monta o caminho da página do lugar com o id codificado', () => {
+    expect(placePath('mapas_saas:space:31')).toBe('/lugar/mapas_saas%3Aspace%3A31');
   });
 });

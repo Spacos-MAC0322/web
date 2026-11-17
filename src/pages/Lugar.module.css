@@ -1,0 +1,156 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 5vw, 56px);
+}
+
+/* Ilustração e título lado a lado; empilhados no celular. */
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.art {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: 24px;
+  background: var(--color-green);
+  box-shadow: var(--shadow);
+
+  @media (max-width: 768px) {
+    aspect-ratio: 2 / 1;
+  }
+}
+
+.artSun {
+  position: absolute;
+  top: 16%;
+  right: 14%;
+  width: 28%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-mustard);
+}
+
+.artHill {
+  position: absolute;
+  left: -10%;
+  bottom: -35%;
+  width: 90%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-terracotta);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tag {
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--color-sage);
+  color: var(--color-green);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.neighborhood {
+  font-size: 18px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  padding: 4px 12px;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  color: var(--color-green);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+  gap: clamp(24px, 5vw, 64px);
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.description {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.missing {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.sources {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.sources a,
+.backLink {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.sources a:focus-visible,
+.backLink:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.stateTitle {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+}
+
+.loading {
+  font-size: 18px;
+}
