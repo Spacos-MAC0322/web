@@ -1,0 +1,105 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(32px, 5vw, 56px);
+}
+
+/* No protótipo, "← Explorar" fica ~100 px abaixo da faixa e o conteúdo, 50 px abaixo dele. */
+.toolbar {
+  margin-top: clamp(0px, 3vw, 44px);
+}
+
+.backLink {
+  color: var(--color-green);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.backLink:focus-visible,
+.sources a:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+/* Colunas de 544 e 695 px no protótipo; empilhadas no celular. */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 544fr) minmax(0, 695fr);
+  align-items: start;
+  gap: clamp(32px, 5.5vw, 77px);
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 25px;
+}
+
+.name {
+  color: var(--color-green);
+  font-family: var(--heading);
+  font-size: clamp(32px, 3.1vw, 44px);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  font-size: 17px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.description {
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.4;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.missing {
+  font-style: italic;
+}
+
+.sources {
+  font-size: 14px;
+}
+
+.sources a {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.stateTitle {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+}
+
+.loading {
+  font-size: 18px;
+}

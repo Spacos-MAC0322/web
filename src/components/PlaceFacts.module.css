@@ -1,0 +1,82 @@
+/* Card "Planeje sua visita" (Figma "Info card"): fundo claro, cantos de 22 px, linhas com
+   rótulo em negrito à esquerda (128 px) e valor em verde. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 26px 32px;
+  border-radius: 22px;
+  background: var(--color-surface);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  column-gap: 0;
+  row-gap: 4px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.term {
+  color: var(--color-graphite);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  color: var(--color-green);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note {
+  color: var(--color-graphite);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.missing {
+  color: var(--color-graphite);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.link {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}

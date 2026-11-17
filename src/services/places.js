@@ -3,6 +3,11 @@
 // O backend já devolve apenas lugares publicados e com coordenadas válidas.
 import api from './api';
 
+// Ids vêm do backend no formato "provedor:tipo:id" e precisam ser codificados na URL.
+export function placePath(id) {
+  return `/lugar/${encodeURIComponent(id)}`;
+}
+
 const COORDINATE_DECIMALS = 5; // ~1 m: evita requisições repetidas por ruído de ponto flutuante.
 
 function round(value) {
@@ -47,4 +52,11 @@ function toPin(place) {
 export async function fetchPlacesInBounds(boundsParams, { signal } = {}) {
   const { data } = await api.get('/api/places', { params: boundsParams, signal });
   return Array.isArray(data) ? data.map(toPin).filter(Boolean) : [];
+}
+
+// Detalhes de um espaço, com curadoria e programação dos próximos 30 dias (issue #2).
+// Um id inexistente rejeita com ApiError de status 404.
+export async function fetchPlaceDetail(id, { signal } = {}) {
+  const { data } = await api.get(`/api/places/${encodeURIComponent(id)}`, { signal });
+  return data;
 }

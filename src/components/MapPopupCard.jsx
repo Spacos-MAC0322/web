@@ -3,12 +3,8 @@
 // categoria principal e o botão "Ver detalhes", que leva à página do lugar (issue #2).
 import { useEffect, useId, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { placePath } from '../services/places';
 import styles from './MapPopupCard.module.css';
-
-// Ids vêm do backend no formato "provedor:tipo:id" e precisam ser codificados na URL.
-function placePath(id) {
-  return `/lugar/${encodeURIComponent(id)}`;
-}
 
 // place: { id, name, category } (pino de services/places.js).
 export default function MapPopupCard({ place }) {

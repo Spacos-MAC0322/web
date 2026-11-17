@@ -1,0 +1,86 @@
+/* O protótipo não tem a programação; segue a linguagem da página do lugar: título de seção
+   Fraunces 30 px (como "Explore por interesse") e cards como "Planeje sua visita". */
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(24px, 2.1vw, 30px);
+  line-height: 1.2;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 20px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.event {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 26px;
+  border-radius: 22px;
+  background: var(--color-surface);
+  color: var(--color-graphite);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.when {
+  color: var(--color-green);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.schedule,
+.details {
+  color: var(--color-green);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.notice {
+  max-width: 60ch;
+  padding: 20px 26px;
+  border-radius: 22px;
+  background: var(--color-surface);
+  font-size: 16px;
+}
+
+/* Botão secundário no formato dos botões do protótipo (50 px, cantos de 16 px). */
+.toggle {
+  min-height: 50px;
+  padding: 0 22px;
+  border: 2px solid var(--color-green);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--color-green);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: var(--accent-bg);
+}
+
+.toggle:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}

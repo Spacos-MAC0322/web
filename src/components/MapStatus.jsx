@@ -3,8 +3,8 @@
 // "Tentar de novo"). Com pinos na tela, só leitores de tela recebem a contagem.
 // Fica sobreposto ao mapa de propósito: se mudasse a altura do mapa, cada troca de estado
 // geraria novos limites e uma nova consulta, em ciclo.
-import { ApiError } from '../services/api';
 import { PlacesStatus } from '../hooks/usePlacesInBounds';
+import RequestError from './RequestError';
 import styles from './MapStatus.module.css';
 
 const FALLBACK_ERROR = 'Não foi possível carregar os espaços. Tente novamente.';
@@ -13,24 +13,17 @@ function countText(count) {
   return `${count} ${count === 1 ? 'espaço' : 'espaços'} nesta área`;
 }
 
-function ErrorMessage({ error, onRetry }) {
-  // Só o ApiError traz mensagem pronta para o usuário; outros erros são falhas internas.
-  const isApiError = error instanceof ApiError;
-  const canRetry = !isApiError || error.isRetryable;
-  return (
-    <p className={`${styles.pill} ${styles.error}`}>
-      {isApiError ? error.message : FALLBACK_ERROR}
-      {canRetry && (
-        <button type="button" className={styles.retry} onClick={onRetry}>
-          Tentar de novo
-        </button>
-      )}
-    </p>
-  );
-}
-
 function StatusContent({ count, status, error, onRetry }) {
-  if (status === PlacesStatus.ERROR) return <ErrorMessage error={error} onRetry={onRetry} />;
+  if (status === PlacesStatus.ERROR) {
+    return (
+      <RequestError
+        className={`${styles.pill} ${styles.error}`}
+        error={error}
+        onRetry={onRetry}
+        fallbackMessage={FALLBACK_ERROR}
+      />
+    );
+  }
   if (status === PlacesStatus.IDLE || (status === PlacesStatus.LOADING && count === 0)) {
     return <p className={styles.pill}>Carregando espaços…</p>;
   }

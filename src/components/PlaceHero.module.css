@@ -1,0 +1,112 @@
+/* Medidas do protótipo (1440 px): faixa de 320 px, imagem de 440 × 293 px a 34 px do topo,
+   formas terracota (251 × 218) e mostarda (170 × 208), título Fraunces 74 px creme. */
+.hero {
+  --overhang: 8px; /* a imagem passa um pouco da faixa verde, como no protótipo */
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  align-items: center;
+  column-gap: clamp(32px, 5.5vw, 80px);
+  min-height: calc(320px + var(--overhang));
+  margin-top: calc(-1 * var(--page-pad-y, 0px));
+  padding-top: 34px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+    min-height: 0;
+    padding-top: 40px;
+  }
+}
+
+/* Fundo de ponta a ponta sem rolagem horizontal: a sombra estende o verde até as bordas da
+   janela e o clip-path corta o que passaria acima e abaixo da faixa. */
+.hero::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: 0 0 var(--overhang);
+  background: var(--color-green);
+  box-shadow: 0 0 0 100vmax var(--color-green);
+  clip-path: inset(0 -100vmax);
+
+  @media (max-width: 768px) {
+    bottom: 0;
+  }
+}
+
+.art {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 440 / 293;
+}
+
+.picture {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 30px;
+  background: var(--color-sage);
+}
+
+.initial {
+  color: var(--color-green);
+  font-family: var(--heading);
+  font-size: clamp(96px, 14vw, 180px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.accentTerracotta,
+.accentMustard {
+  position: absolute;
+  z-index: -1;
+}
+
+.accentTerracotta {
+  left: -42px;
+  top: 32.8%;
+  width: 57%;
+  height: 74.4%;
+  border-radius: 20px;
+  background: var(--color-terracotta);
+
+  @media (max-width: 768px) {
+    left: -12px;
+  }
+}
+
+.accentMustard {
+  left: 68%;
+  top: -14.3%;
+  width: 38.6%;
+  height: 71%;
+  border-radius: 76px;
+  background: var(--color-mustard);
+
+  @media (max-width: 768px) {
+    left: auto;
+    right: -12px;
+    top: -16px;
+  }
+}
+
+.title {
+  margin: 0;
+  padding-bottom: var(--overhang);
+  color: var(--color-cream);
+  font-size: clamp(40px, 5.2vw, 74px);
+  letter-spacing: normal;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+
+  @media (max-width: 768px) {
+    padding-bottom: 32px;
+  }
+}

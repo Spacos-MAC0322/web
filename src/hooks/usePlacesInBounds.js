@@ -4,15 +4,11 @@
 // uma mais recente. Os pinos atuais continuam na tela enquanto a nova consulta carrega.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchPlacesInBounds, toBoundsParams } from '../services/places';
+import { RequestStatus } from './useApiRequest';
 
 const DEBOUNCE_MS = 300;
 
-export const PlacesStatus = Object.freeze({
-  IDLE: 'idle',
-  LOADING: 'loading',
-  SUCCESS: 'success',
-  ERROR: 'error',
-});
+export const PlacesStatus = RequestStatus;
 
 const sameParams = (a, b) =>
   a !== null &&
