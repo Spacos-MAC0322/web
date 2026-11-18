@@ -9,14 +9,32 @@ import { categoryIcon } from './categoryIcons';
 import PlaceTag from './PlaceTag';
 import styles from './PlaceCard.module.css';
 
+function CardFooter({ category }) {
+  return (
+    <div className={styles.footer}>
+      {category && (
+        <PlaceTag variant="category" icon={categoryIcon(category)} className={styles.categoryTag}>
+          {category}
+        </PlaceTag>
+      )}
+      <span className={styles.arrow} aria-hidden="true">
+        →
+      </span>
+    </div>
+  );
+}
+
 // place: { id, name, category, neighborhood, summary } (services/places.js, toCard).
 // tone: par de cores da arte, "green" (verde + terracota) ou "mustard" (mostarda + grafite),
 // alternado entre os cards como no protótipo.
-export default function PlaceCard({ place, tone = 'green', headingLevel = 3 }) {
+// compact: item da lista do painel da página Explorar (Figma, 385 × 101 px): arte menor,
+// nome e subtítulo, sem etiqueta nem seta.
+export default function PlaceCard({ place, tone = 'green', headingLevel = 3, compact = false }) {
   const Heading = `h${headingLevel}`;
   const subtitle = [place.neighborhood, place.summary].filter(Boolean).join(' · ');
+  const variant = compact ? styles.compact : '';
   return (
-    <article className={`${styles.card} ${styles[tone] ?? styles.green}`}>
+    <article className={`${styles.card} ${styles[tone] ?? styles.green} ${variant}`}>
       <div className={styles.art} aria-hidden="true">
         <span className={styles.blockBack} />
         <span className={styles.blockFront} />
@@ -28,20 +46,7 @@ export default function PlaceCard({ place, tone = 'green', headingLevel = 3 }) {
           </Link>
         </Heading>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-        <div className={styles.footer}>
-          {place.category && (
-            <PlaceTag
-              variant="category"
-              icon={categoryIcon(place.category)}
-              className={styles.categoryTag}
-            >
-              {place.category}
-            </PlaceTag>
-          )}
-          <span className={styles.arrow} aria-hidden="true">
-            →
-          </span>
-        </div>
+        {!compact && <CardFooter category={place.category} />}
       </div>
     </article>
   );

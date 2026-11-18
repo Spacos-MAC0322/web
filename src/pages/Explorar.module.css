@@ -10,7 +10,130 @@
   line-height: 1.1;
 }
 
+/* Figma: painel de 500 px à esquerda e mapa à direita. Em telas estreitas a ordem é
+   busca → mapa → lista, para o mapa não ficar abaixo de uma lista longa. */
+.layout {
+  display: grid;
+  /* minmax(0, …): a coluna encolhe até a tela, sem rolagem lateral no celular. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'controls'
+    'map'
+    'results';
+  gap: 16px;
+
+  @media (min-width: 960px) {
+    grid-template-columns: minmax(320px, 500px) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'controls map'
+      'results map';
+    column-gap: clamp(24px, 3vw, 41px);
+    row-gap: 0;
+    align-items: start;
+  }
+}
+
+/* Painel claro de cantos arredondados; no desktop, busca e lista formam um só painel. */
+.panel {
+  padding: 24px clamp(16px, 2.5vw, 32px);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.controls {
+  grid-area: controls;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (min-width: 960px) {
+    padding-top: 33px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.results {
+  grid-area: results;
+
+  &:empty {
+    display: none;
+  }
+
+  @media (min-width: 960px) {
+    align-self: stretch;
+    padding-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+
+    &:empty {
+      display: block;
+    }
+
+    & > section {
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+  }
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Figma: Fraunces semibold 25 px; "Limpar" em Inter 20 px. */
+.panelTitle {
+  margin: 0;
+  color: #000;
+  font-family: var(--heading);
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.clear {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-graphite);
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-mustard);
+    outline-offset: 2px;
+  }
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-graphite);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
 /* Altura própria: a página rola normalmente até o rodapé, como no protótipo. */
 .map {
+  grid-area: map;
   height: clamp(420px, 70svh, 760px);
+
+  @media (min-width: 960px) {
+    position: sticky;
+    top: 16px;
+  }
 }

@@ -77,4 +77,12 @@ describe('categoryIcon', () => {
     expect(categoryIcon('Biblioteca')).toBeNull();
     expect(categoryIcon(null)).toBeNull();
   });
+
+  it('na versão compacta (lista do Explorar) mostra só nome e subtítulo', () => {
+    renderCard({ ...PLACE, summary: 'a 350 m · gratuito' }, { compact: true });
+    expect(screen.getByRole('link', { name: PLACE.name })).toBeInTheDocument();
+    expect(screen.getByText('Butantã · a 350 m · gratuito')).toBeInTheDocument();
+    expect(screen.queryByText('Casa de Cultura')).not.toBeInTheDocument();
+    expect(screen.queryByText('→')).not.toBeInTheDocument();
+  });
 });
