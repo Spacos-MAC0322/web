@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import api from './api';
 import {
   fetchDiscoverPlaces,
+  fetchNearbyPlaces,
   fetchPlaceDetail,
   fetchPlacesInBounds,
   placePath,
@@ -70,9 +71,17 @@ describe('fetchPlacesInBounds', () => {
         name: 'Museu',
         category: 'Museu',
         position: [-23.55, -46.63],
+        neighborhood: null,
         badges,
       },
-      { id: 'sem-categoria', name: 'Praça', category: null, position: [-23.56, -46.64], badges: {} },
+      {
+        id: 'sem-categoria',
+        name: 'Praça',
+        category: null,
+        position: [-23.56, -46.64],
+        neighborhood: null,
+        badges: {},
+      },
     ]);
   });
 
@@ -138,5 +147,46 @@ describe('fetchDiscoverPlaces', () => {
   it('devolve lista vazia para respostas inesperadas', async () => {
     vi.spyOn(api, 'get').mockResolvedValue({ data: null });
     await expect(fetchDiscoverPlaces()).resolves.toEqual([]);
+  });
+});
+
+describe('fetchNearbyPlaces', () => {
+  it('consulta GET /api/places/nearby com o raio em km e traz o bairro de cada pino', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({
+      data: [
+        {
+          id: 'perto',
+          name: 'Casa Perto',
+          primary_category: 'Teatro',
+          location: { type: 'Point', coordinates: [-46.65, -23.56] },
+          badges: { is_free: true },
+          neighborhood: 'Bela Vista',
+        },
+        { id: 'sem-local', name: 'Sem local', location: null },
+      ],
+    });
+    const { signal } = new AbortController();
+
+    const places = await fetchNearbyPlaces({ lat: -23.5, lng: -46.6, radiusKm: 2 }, { signal });
+
+    expect(get).toHaveBeenCalledWith('/api/places/nearby', {
+      params: { lat: -23.5, lng: -46.6, radius_km: 2 },
+      signal,
+    });
+    expect(places).toEqual([
+      {
+        id: 'perto',
+        name: 'Casa Perto',
+        category: 'Teatro',
+        position: [-23.56, -46.65],
+        neighborhood: 'Bela Vista',
+        badges: { is_free: true },
+      },
+    ]);
+  });
+
+  it('retorna lista vazia quando a resposta não é uma lista', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({ data: null });
+    await expect(fetchNearbyPlaces({ lat: 0, lng: 0, radiusKm: 1 })).resolves.toEqual([]);
   });
 });
