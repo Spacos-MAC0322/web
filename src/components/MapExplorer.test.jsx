@@ -20,13 +20,22 @@ const PIN = {
   badges: {},
 };
 
-function renderExplorer() {
+function renderExplorer(props = {}) {
   return render(
     <MemoryRouter>
-      <MapExplorer />
+      <MapExplorer {...props} />
     </MemoryRouter>,
   );
 }
+
+const NEARBY_PIN = { ...PIN, id: 'perto', name: 'Teatro Perto', position: [-23.562, -46.656] };
+const SEARCH_AREA = { center: [-23.5614, -46.6559], radiusKm: 1, label: 'MASP' };
+const nearbyResult = (places) => ({
+  places,
+  status: 'success',
+  error: null,
+  retry: vi.fn(),
+});
 
 describe('MapExplorer', () => {
   beforeEach(() => {
@@ -70,5 +79,47 @@ describe('MapExplorer', () => {
     await userEvent.click(retry);
     expect(await screen.findByTitle('Museu de Teste')).toBeInTheDocument();
     expect(fetchPlacesInBounds).toHaveBeenCalledTimes(2);
+  });
+
+  it('com uma área de busca, mostra o raio e só os espaços próximos, sem consultar a área', async () => {
+    const { container } = renderExplorer({
+      searchArea: SEARCH_AREA,
+      nearby: nearbyResult([NEARBY_PIN]),
+    });
+
+    expect(await screen.findByTitle('Teatro Perto')).toBeInTheDocument();
+    expect(screen.getByTitle('Ponto de referência: MASP')).toBeInTheDocument();
+    expect(container.querySelector('path.leaflet-interactive, path')).not.toBeNull();
+    expect(screen.queryByTitle('Museu de Teste')).not.toBeInTheDocument();
+    expect(fetchPlacesInBounds).not.toHaveBeenCalled();
+  });
+
+  it('avisa quando não há espaços no raio', async () => {
+    renderExplorer({ searchArea: SEARCH_AREA, nearby: nearbyResult([]) });
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Nenhum espaço em até 1 km. Aumente o raio.',
+    );
+  });
+
+  it('volta a consultar a área visível quando a busca é limpa', async () => {
+    const { rerender } = renderExplorer({
+      searchArea: SEARCH_AREA,
+      nearby: nearbyResult([NEARBY_PIN]),
+    });
+    await screen.findByTitle('Teatro Perto');
+    rerender(
+      <MemoryRouter>
+        <MapExplorer />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByTitle('Museu de Teste')).toBeInTheDocument();
+    expect(fetchPlacesInBounds).toHaveBeenCalledOnce();
+  });
+
+  it('mostra o botão de localização abaixo do zoom quando há onLocate', async () => {
+    const onLocate = vi.fn();
+    renderExplorer({ onLocate });
+    await userEvent.click(screen.getByRole('button', { name: 'Usar minha localização' }));
+    expect(onLocate).toHaveBeenCalledOnce();
   });
 });

@@ -13,7 +13,9 @@ function countText(count) {
   return `${count} ${count === 1 ? 'espaço' : 'espaços'} nesta área`;
 }
 
-function StatusContent({ count, status, error, onRetry }) {
+const DEFAULT_EMPTY = 'Nenhum espaço nesta área. Mova o mapa ou diminua o zoom.';
+
+function StatusContent({ count, status, error, onRetry, emptyMessage = DEFAULT_EMPTY }) {
   if (status === PlacesStatus.ERROR) {
     return (
       <RequestError
@@ -28,19 +30,22 @@ function StatusContent({ count, status, error, onRetry }) {
     return <p className={styles.pill}>Carregando espaços…</p>;
   }
   if (status === PlacesStatus.LOADING) return <p className={styles.pill}>Atualizando…</p>;
-  if (count === 0) {
-    return (
-      <p className={styles.pill}>Nenhum espaço nesta área. Mova o mapa ou diminua o zoom.</p>
-    );
-  }
+  if (count === 0) return <p className={styles.pill}>{emptyMessage}</p>;
   return <p className="visually-hidden">{countText(count)}</p>;
 }
 
-// count: pinos na tela; status/error/onRetry: vindos de usePlacesInBounds.
-export default function MapStatus({ count, status, error, onRetry }) {
+// count: pinos na tela; status/error/onRetry: vindos de usePlacesInBounds (ou da busca por
+// proximidade); emptyMessage substitui o aviso de área vazia.
+export default function MapStatus({ count, status, error, onRetry, emptyMessage }) {
   return (
     <div className={styles.overlay} role="status">
-      <StatusContent count={count} status={status} error={error} onRetry={onRetry} />
+      <StatusContent
+        count={count}
+        status={status}
+        error={error}
+        onRetry={onRetry}
+        emptyMessage={emptyMessage}
+      />
     </div>
   );
 }

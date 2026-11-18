@@ -17,18 +17,15 @@ import {
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
+import { MAX_BOUNDS, SAO_PAULO_CENTER } from '../services/geo';
+import MapLocateControl from './MapLocateControl';
 import MapPopupCard from './MapPopupCard';
+import MapSearchArea from './MapSearchArea';
 import styles from './Map.module.css';
 
-const SAO_PAULO_CENTER = [-23.5505, -46.6333];
 const DEFAULT_ZOOM = 13;
 const MIN_ZOOM = 10;
 const MAX_ZOOM = 18;
-// Região metropolitana com folga: impede que o mapa se perca longe da cidade.
-const MAX_BOUNDS = [
-  [-24.2, -47.2],
-  [-23.1, -46.1],
-];
 
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION =
@@ -126,12 +123,17 @@ function CloseOnEscape({ children }) {
 
 // places: [{ id, name, category, position: [lat, lng], badges }] (services/places.js).
 // renderPopup(place): conteúdo do card ao clicar no pino; padrão: MapPopupCard (#26).
+// searchArea: { center, radiusKm, label } desenha o círculo da busca por proximidade (#3).
+// onLocate: com ele, aparece o botão "Usar minha localização" abaixo do zoom.
 export default function PlacesMap({
   places = [],
   onBoundsChange,
   renderPopup = defaultPopup,
   center = SAO_PAULO_CENTER,
   zoom = DEFAULT_ZOOM,
+  searchArea = null,
+  onLocate,
+  locating = false,
   className = '',
 }) {
   const { openPlaceId, markerEvents } = useOpenPlace();
@@ -154,7 +156,9 @@ export default function PlacesMap({
         <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
         {/* Botões de zoom no canto superior direito, como no protótipo. */}
         <ZoomControl position="topright" zoomInTitle="Aproximar" zoomOutTitle="Afastar" />
+        {onLocate && <MapLocateControl onLocate={onLocate} busy={locating} />}
         <BoundsWatcher onBoundsChange={onBoundsChange} />
+        {searchArea && <MapSearchArea {...searchArea} />}
         <MarkerClusterGroup chunkedLoading iconCreateFunction={createClusterIcon}>
           {places.map((place) => (
             <Marker
