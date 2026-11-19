@@ -1,0 +1,75 @@
+/* src/components/FavoriteButton.module.css */
+.button {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border);
+  background: var(--color-surface);
+  color: var(--color-green);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--color-mustard);
+  background: #fff9eb;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+.iconButton {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.pill {
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 999px;
+}
+
+.active {
+  border-color: var(--color-mustard);
+  background: var(--color-mustard);
+  color: var(--color-graphite);
+}
+
+.active:hover:not(:disabled) {
+  border-color: var(--color-graphite);
+  background: var(--color-mustard);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.label {
+  white-space: nowrap;
+}

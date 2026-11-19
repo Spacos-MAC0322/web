@@ -6,6 +6,7 @@
 import { useCallback, useId } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import EventList from '../components/EventList';
+import FavoriteButton from '../components/FavoriteButton';
 import PlaceFacts from '../components/PlaceFacts';
 import PlaceHero from '../components/PlaceHero';
 import PlaceTag from '../components/PlaceTag';
@@ -106,9 +107,12 @@ function PlaceDetail({ place }) {
   return (
     <article className={styles.page} aria-labelledby={titleId}>
       <PlaceHero name={place.name} titleId={titleId} />
-      <nav className={styles.toolbar} aria-label="Voltar">
-        <BackLink />
-      </nav>
+      <div className={styles.toolbar}>
+        <nav aria-label="Voltar">
+          <BackLink />
+        </nav>
+        <FavoriteButton placeId={place.id} placeName={place.name} variant="pill" />
+      </div>
       <div className={styles.columns}>
         <PlaceIntro place={place} titleId={titleId} />
         <PlaceFacts place={place} />
