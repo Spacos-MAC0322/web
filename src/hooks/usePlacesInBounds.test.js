@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { LatLngBounds } from 'leaflet';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchPlacesInBounds } from '../services/places';
+import { EMPTY_FILTERS } from '../services/searchFilters';
 import usePlacesInBounds, { PlacesStatus } from './usePlacesInBounds';
 
 // Mantém toBoundsParams real; só a chamada ao backend é simulada.
@@ -108,5 +109,34 @@ describe('usePlacesInBounds', () => {
     await flush();
     unmount();
     expect(fetchPlacesInBounds.mock.calls[0][1].signal.aborted).toBe(true);
+  });
+
+  it('consulta de novo a mesma área quando os filtros mudam', async () => {
+    const free = { ...EMPTY_FILTERS, free: true };
+    const { result, rerender } = renderHook(({ filters }) => usePlacesInBounds(filters), {
+      initialProps: { filters: EMPTY_FILTERS },
+    });
+    act(() => result.current.updateBounds(CENTER));
+    await flush();
+    expect(fetchPlacesInBounds.mock.calls[0][1].filters).toBe(EMPTY_FILTERS);
+
+    rerender({ filters: { ...EMPTY_FILTERS } }); // mesmos filtros, outro objeto
+    await flush();
+    expect(fetchPlacesInBounds).toHaveBeenCalledOnce();
+
+    rerender({ filters: free });
+    await flush();
+    expect(fetchPlacesInBounds).toHaveBeenCalledTimes(2);
+    expect(fetchPlacesInBounds.mock.calls[1][0]).toEqual(fetchPlacesInBounds.mock.calls[0][0]);
+    expect(fetchPlacesInBounds.mock.calls[1][1].filters).toBe(free);
+  });
+
+  it('com filtros, mas sem área ainda, espera o mapa informar os limites', async () => {
+    const { rerender } = renderHook(({ filters }) => usePlacesInBounds(filters), {
+      initialProps: { filters: EMPTY_FILTERS },
+    });
+    rerender({ filters: { ...EMPTY_FILTERS, regions: ['Sul'] } });
+    await flush();
+    expect(fetchPlacesInBounds).not.toHaveBeenCalled();
   });
 });
