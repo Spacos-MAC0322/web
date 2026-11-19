@@ -33,6 +33,7 @@ const SERVICE_NAMES = {
   geosampa: 'GeoSampa',
   sptrans: 'de transporte público (SPTrans)',
   open_meteo: 'de previsão do tempo',
+  nominatim: 'de busca de endereços',
 };
 
 const MESSAGES = {

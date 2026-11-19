@@ -1,5 +1,6 @@
 // src/services/places.js
-// Consulta dos pinos do mapa: GET /api/places, filtrado pela área visível (DA04/DA05).
+// Consulta dos pinos do mapa: GET /api/places, filtrado pela área visível (DA04/DA05),
+// ou GET /api/places/nearby, filtrado por um raio em volta de um ponto (issue #3).
 // O backend já devolve apenas lugares publicados e com coordenadas válidas.
 import api from './api';
 
@@ -45,6 +46,7 @@ function toPin(place) {
     name: place.name,
     category: place.primary_category ?? null,
     position: [lat, lng],
+    neighborhood: place.neighborhood ?? null,
     badges: place.badges ?? {},
   };
 }
@@ -70,6 +72,16 @@ export async function fetchDiscoverPlaces({ signal } = {}) {
 
 export async function fetchPlacesInBounds(boundsParams, { signal } = {}) {
   const { data } = await api.get('/api/places', { params: boundsParams, signal });
+  return Array.isArray(data) ? data.map(toPin).filter(Boolean) : [];
+}
+
+// Espaços a até `radiusKm` de um ponto (issue #3), do mais próximo ao mais distante.
+// O backend devolve também o bairro, exibido na lista ao lado do mapa.
+export async function fetchNearbyPlaces({ lat, lng, radiusKm }, { signal } = {}) {
+  const { data } = await api.get('/api/places/nearby', {
+    params: { lat, lng, radius_km: radiusKm },
+    signal,
+  });
   return Array.isArray(data) ? data.map(toPin).filter(Boolean) : [];
 }
 
