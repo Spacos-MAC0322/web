@@ -47,9 +47,18 @@ describe('PlaceCard', () => {
 
   it('deixa a arte e a seta fora da árvore de acessibilidade', () => {
     const { container } = renderCard();
-    const hidden = container.querySelectorAll('[aria-hidden="true"]');
+    const hidden = container.querySelectorAll('div[aria-hidden="true"], span[aria-hidden="true"]');
     expect(hidden).toHaveLength(2);
     expect(hidden[1]).toHaveTextContent('→');
+  });
+
+  it('exibe o botão de favoritar com ícone de estrela', () => {
+    renderCard();
+    const favButton = screen.getByRole('button', {
+      name: `Favoritar ${PLACE.name}`,
+    });
+    expect(favButton).toBeInTheDocument();
+    expect(favButton).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('usa só o que existe no subtítulo e omite o que falta', () => {

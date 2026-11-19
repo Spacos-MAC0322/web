@@ -66,7 +66,7 @@ describe('DiscoverSection', () => {
     fetchDiscoverPlaces.mockResolvedValue(places(3));
     const section = renderSection();
     expect(await within(section).findAllByRole('listitem')).toHaveLength(3);
-    expect(within(section).queryByRole('button')).not.toBeInTheDocument();
+    expect(within(section).queryByRole('button', { name: /Ver todos/i })).not.toBeInTheDocument();
   });
 
   it('avisa quando a seleção está vazia', async () => {

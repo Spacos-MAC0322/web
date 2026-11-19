@@ -85,6 +85,16 @@ describe('página Lugar', () => {
     expect(screen.getByText('Página Explorar')).toBeInTheDocument();
   });
 
+  it('exibe o botão de favoritar com estrela na página de detalhes', async () => {
+    renderAt();
+    const favButton = await screen.findByRole('button', {
+      name: `Favoritar ${PLACE.name}`,
+    });
+    expect(favButton).toBeInTheDocument();
+    expect(favButton).toHaveTextContent('Favoritar');
+    expect(favButton).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('mostra horário, entrada, acessibilidade, endereço e contato no card', async () => {
     renderAt();
     const card = await screen.findByRole('region', { name: 'Planeje sua visita' });

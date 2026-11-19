@@ -1,0 +1,85 @@
+/* src/pages/Salvos.module.css */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--color-graphite);
+  font-size: 18px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 50px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.emptyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 540px;
+  padding: clamp(24px, 4vw, 36px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 24px;
+}
+
+.emptyText {
+  color: var(--color-graphite);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: var(--color-green);
+  color: var(--color-cream);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.actionLink:hover {
+  background: var(--color-green-hover);
+}
+
+.actionLink:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+.loading {
+  font-size: 18px;
+}

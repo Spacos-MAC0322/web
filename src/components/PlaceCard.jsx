@@ -6,6 +6,7 @@
 import { Link } from 'react-router-dom';
 import { placePath } from '../services/places';
 import { categoryIcon } from './categoryIcons';
+import FavoriteButton from './FavoriteButton';
 import PlaceTag from './PlaceTag';
 import styles from './PlaceCard.module.css';
 
@@ -40,11 +41,18 @@ export default function PlaceCard({ place, tone = 'green', headingLevel = 3, com
         <span className={styles.blockFront} />
       </div>
       <div className={styles.body}>
-        <Heading className={styles.title}>
-          <Link to={placePath(place.id)} className={styles.link}>
-            {place.name}
-          </Link>
-        </Heading>
+        <div className={styles.header}>
+          <Heading className={styles.title}>
+            <Link to={placePath(place.id)} className={styles.link}>
+              {place.name}
+            </Link>
+          </Heading>
+          <FavoriteButton
+            placeId={place.id}
+            placeName={place.name}
+            className={styles.favoriteButton}
+          />
+        </div>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         {!compact && <CardFooter category={place.category} />}
       </div>

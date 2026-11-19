@@ -73,6 +73,17 @@
   white-space: normal;
 }
 
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.favoriteButton {
+  flex-shrink: 0;
+}
+
 .title {
   margin: 0;
   padding-right: 7px;

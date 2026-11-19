@@ -6,6 +6,11 @@
 
 /* No protótipo, "← Explorar" fica ~100 px abaixo da faixa e o conteúdo, 50 px abaixo dele. */
 .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-top: clamp(0px, 3vw, 44px);
 }
 
