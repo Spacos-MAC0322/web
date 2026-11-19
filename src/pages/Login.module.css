@@ -107,16 +107,27 @@
   font-weight: 600;
 }
 
+.accountActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .primaryButton,
+.primaryLink,
 .secondaryButton {
   width: 100%;
+  box-sizing: border-box;
   padding: 12px 24px;
   border-radius: 999px;
   font-weight: 600;
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.primaryButton {
+.primaryButton,
+.primaryLink {
   margin-top: 8px;
   border: 0;
   background-color: var(--color-green);
@@ -124,7 +135,8 @@
   transition: background-color 0.15s ease;
 }
 
-.primaryButton:hover:not(:disabled) {
+.primaryButton:hover:not(:disabled),
+.primaryLink:hover {
   background-color: var(--color-green-hover);
 }
 
@@ -142,6 +154,7 @@
 .toggleButton:focus-visible,
 .input:focus-visible,
 .primaryButton:focus-visible,
+.primaryLink:focus-visible,
 .secondaryButton:focus-visible {
   outline: 3px solid var(--color-mustard);
   outline-offset: 2px;

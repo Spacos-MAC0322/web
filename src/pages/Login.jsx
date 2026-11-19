@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthStatus, useAuth } from '../hooks/useAuth';
 import { AuthMode, PASSWORD_MIN_LENGTH, validate } from './loginValidation';
 import styles from './Login.module.css';
@@ -183,9 +183,14 @@ function SignedIn({ user, onLogout }) {
         Você entrou como <strong>{user.email}</strong>. Seus roteiros e listas ficam salvos na
         sua conta.
       </p>
-      <button type="button" className={styles.secondaryButton} onClick={onLogout}>
-        Sair
-      </button>
+      <div className={styles.accountActions}>
+        <Link to="/salvos" className={styles.primaryLink}>
+          Meus Favoritos
+        </Link>
+        <button type="button" className={styles.secondaryButton} onClick={onLogout}>
+          Sair
+        </button>
+      </div>
     </section>
   );
 }

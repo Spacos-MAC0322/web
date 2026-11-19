@@ -5,11 +5,11 @@ import Descobrir from './pages/Descobrir';
 import Explorar from './pages/Explorar';
 import Lugar from './pages/Lugar';
 import Login from './pages/Login';
+import Salvos from './pages/Salvos';
 import './App.css';
 
 // Mocks provisórios para as páginas
 const Rotas = () => <h1>Planejamento de Rotas :o</h1>;
-const Salvos = () => <h1> Meus Lugares Salvos S2 </h1>;
 
 function App() {
   return (
