@@ -1,0 +1,22 @@
+/* "Explore por interesse": título Fraunces 30 px e pílulas na mesma linha (protótipo). */
+.interests {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 45px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(24px, 2.1vw, 30px);
+  line-height: 1.2;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px clamp(16px, 3vw, 45px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

@@ -196,6 +196,45 @@ describe('páginas com mapa', () => {
     ).toHaveAttribute('href', '/lugar/a');
   });
 
+  it('Descobrir busca pelo texto e abre a Explorar com ele aplicado', async () => {
+    renderAt('/');
+    await userEvent.type(
+      screen.getByRole('searchbox', { name: /Buscar espaços culturais/ }),
+      '  Casa de Cultura ',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Buscar' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Encontre o seu próximo passeio' }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('url')).toHaveTextContent('?q=Casa+de+Cultura');
+    expect(screen.getByRole('searchbox', { name: /nome, bairro ou região/ })).toHaveValue(
+      'Casa de Cultura',
+    );
+  });
+
+  it('as pílulas de interesse abrem a Explorar já filtrada', async () => {
+    renderAt('/');
+    const interests = screen.getByRole('region', { name: 'Explore por interesse' });
+    const href = (name) => within(interests).getByRole('link', { name }).getAttribute('href');
+    expect(href('Arte')).toBe('/explorar?categoria=arte');
+    expect(href('Música')).toBe('/explorar?categoria=musica');
+    expect(href('+ Mais filtros')).toBe('/explorar');
+    expect(await within(interests).findByRole('link', { name: 'Grátis' })).toHaveAttribute(
+      'href',
+      '/explorar?gratis=1',
+    );
+  });
+
+  it('sem espaços com preço conhecido, a pílula "Grátis" não aparece', async () => {
+    fetchFilterOptions.mockResolvedValue({ groups: GROUPS, pricedPlaces: 0 });
+    renderAt('/');
+    const interests = screen.getByRole('region', { name: 'Explore por interesse' });
+    await waitFor(() => expect(fetchFilterOptions).toHaveBeenCalled());
+    await screen.findByRole('link', { name: 'Casa de Cultura do Butantã' });
+    expect(within(interests).queryByRole('link', { name: 'Grátis' })).not.toBeInTheDocument();
+  });
+
   it('o filtro rápido "Fora do óbvio" leva o foco até a seção', async () => {
     renderAt('/');
     const interests = screen.getByRole('region', { name: 'Explore por interesse' });

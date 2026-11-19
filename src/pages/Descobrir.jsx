@@ -1,37 +1,36 @@
 // src/pages/Descobrir.jsx
-// Página inicial, na ordem do protótipo: título, "Explore por interesse", chamada para o
-// mapa (página Explorar) e a seção "Fora do óbvio" (#53). Por enquanto, "Explore por
-// interesse" só tem o filtro rápido "Fora do óbvio"; as demais pílulas chegam com a #62.
-import { useRef } from 'react';
-import { Link } from 'react-router-dom';
+// Página inicial, na ordem do protótipo: título, barra de busca, "Explore por interesse",
+// chamada para o mapa (página Explorar) e a seção "Fora do óbvio" (#53). A busca e as
+// pílulas abrem a Explorar com os filtros já aplicados (issue #62).
+import { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import mapaDescobrir from '../assets/mapa-descobrir.jpg';
 import DiscoverSection, { DISCOVER_SECTION_ID } from '../components/DiscoverSection';
-import PlaceTag from '../components/PlaceTag';
+import InterestPills from '../components/InterestPills';
+import SearchBar from '../components/SearchBar';
+import { explorePath } from '../services/searchFilters';
 import styles from './Descobrir.module.css';
 
 function prefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 }
 
-function InterestPills({ onDiscover }) {
+// Envia para a Explorar, onde o mapa e a lista mostram o resultado.
+function PlaceSearch() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
   return (
-    <section className={styles.interests} aria-labelledby="descobrir-interesses-titulo">
-      <h2 id="descobrir-interesses-titulo" className={styles.interestsTitle}>
-        Explore por interesse
-      </h2>
-      <ul className={styles.pills}>
-        <li>
-          <PlaceTag
-            as="a"
-            variant="hidden"
-            href={`#${DISCOVER_SECTION_ID}`}
-            onClick={onDiscover}
-          >
-            Fora do óbvio
-          </PlaceTag>
-        </li>
-      </ul>
-    </section>
+    <SearchBar
+      className={styles.search}
+      label="Buscar espaços culturais por nome, bairro ou região"
+      placeholder="Busque por lugar, bairro ou região"
+      autoComplete="off"
+      maxLength={100}
+      value={query}
+      onChange={setQuery}
+      onSubmit={(text) => navigate(explorePath({ q: text.trim() }))}
+      submitLabel="Buscar"
+    />
   );
 }
 
@@ -77,8 +76,11 @@ export default function Descobrir() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>O que você quer descobrir na cidade hoje?</h1>
-      <InterestPills onDiscover={goToDiscover} />
+      <div className={styles.hero}>
+        <h1 className={styles.title}>O que você quer descobrir na cidade hoje?</h1>
+        <PlaceSearch />
+      </div>
+      <InterestPills discoverHref={`#${DISCOVER_SECTION_ID}`} onDiscover={goToDiscover} />
       <MapSection />
       <DiscoverSection headingRef={discoverHeading} />
     </div>
