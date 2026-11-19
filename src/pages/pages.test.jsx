@@ -1,10 +1,15 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Layout from '../components/Layout';
 import { geocodeAddress } from '../services/geocoding';
-import { fetchDiscoverPlaces, fetchNearbyPlaces, fetchPlacesInBounds } from '../services/places';
+import {
+  fetchDiscoverPlaces,
+  fetchFilterOptions,
+  fetchNearbyPlaces,
+  fetchPlacesInBounds,
+} from '../services/places';
 import Descobrir from './Descobrir';
 import Explorar from './Explorar';
 
@@ -13,8 +18,13 @@ vi.mock('../services/places', async (importOriginal) => ({
   fetchPlacesInBounds: vi.fn(),
   fetchDiscoverPlaces: vi.fn(),
   fetchNearbyPlaces: vi.fn(),
+  fetchFilterOptions: vi.fn(),
 }));
 vi.mock('../services/geocoding', () => ({ geocodeAddress: vi.fn() }));
+
+function CurrentSearch() {
+  return <output data-testid="url">{useLocation().search}</output>;
+}
 
 function renderAt(path) {
   return render(
@@ -25,8 +35,29 @@ function renderAt(path) {
           <Route path="explorar" element={<Explorar />} />
         </Route>
       </Routes>
+      <CurrentSearch />
     </MemoryRouter>,
   );
+}
+
+const GROUPS = [
+  { id: 'arte', label: 'Arte e Cultura', count: 3 },
+  { id: 'teatro', label: 'Teatro e dança', count: 1 },
+  { id: 'gastronomia', label: 'Gastronomia', count: 0 },
+];
+const MUSEU = {
+  id: 'museu',
+  name: 'Museu do Bairro',
+  category: 'Museu',
+  position: [-23.5505, -46.6333],
+  neighborhood: 'Sé',
+  badges: { is_free: true },
+};
+
+// O jsdom não calcula layout; com tamanho, o mapa informa a área visível e consulta.
+function giveTheMapASize() {
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(800);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600);
 }
 
 const MAP_REGION = { name: /mapa de espaços culturais/i };
@@ -35,6 +66,8 @@ describe('páginas com mapa', () => {
   beforeEach(() => {
     fetchPlacesInBounds.mockReset();
     fetchPlacesInBounds.mockResolvedValue([]);
+    fetchFilterOptions.mockReset();
+    fetchFilterOptions.mockResolvedValue({ groups: GROUPS, pricedPlaces: 25 });
     fetchDiscoverPlaces.mockReset();
     fetchDiscoverPlaces.mockResolvedValue([
       { id: 'a', name: 'Casa de Cultura do Butantã', category: 'Casa de Cultura' },
@@ -84,6 +117,57 @@ describe('páginas com mapa', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Limpar' }));
     expect(screen.queryByRole('heading', { name: /lugar em até/ })).not.toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: /endereço/i })).toHaveValue('');
+  });
+
+  it('Explorar aplica os filtros do endereço ao mapa e à lista', async () => {
+    giveTheMapASize();
+    fetchPlacesInBounds.mockResolvedValue([MUSEU]);
+    renderAt('/explorar?categoria=arte&gratis=1&zona=sul');
+
+    expect(await screen.findByRole('heading', { name: '1 lugar no mapa' })).toBeInTheDocument();
+    expect(screen.getByText('Sé · gratuito')).toBeInTheDocument();
+    expect(fetchPlacesInBounds.mock.calls.at(-1)[1].filters).toEqual({
+      q: '',
+      categories: ['arte'],
+      regions: ['Sul'],
+      free: true,
+      maxPrice: null,
+    });
+    expect(await screen.findByRole('checkbox', { name: /Arte e Cultura/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Entrada gratuita' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Zona Sul' })).toBeChecked();
+    // Grupos sem espaços não aparecem.
+    expect(screen.queryByRole('checkbox', { name: /Gastronomia/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Filtros (3)' })).toBeInTheDocument();
+  });
+
+  it('Explorar consulta de novo ao marcar filtros e digitar, e "Limpar" desfaz tudo', async () => {
+    giveTheMapASize();
+    renderAt('/explorar');
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Teatro e dança, 1 espaço' }));
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Preço máximo' }), 'Até R$ 40');
+    await userEvent.type(
+      screen.getByRole('searchbox', { name: /nome, bairro ou região/ }),
+      'centro',
+    );
+
+    await waitFor(() => expect(screen.getByTestId('url')).toHaveTextContent('q=centro'));
+    expect(screen.getByTestId('url')).toHaveTextContent('?q=centro&categoria=teatro&ate=40');
+    await waitFor(() =>
+      expect(fetchPlacesInBounds.mock.calls.at(-1)[1].filters).toEqual({
+        q: 'centro',
+        categories: ['teatro'],
+        regions: [],
+        free: false,
+        maxPrice: 40,
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar' }));
+    expect(screen.getByTestId('url')).toBeEmptyDOMElement();
+    expect(screen.getByRole('checkbox', { name: /Teatro e dança/ })).not.toBeChecked();
+    expect(screen.getByRole('searchbox', { name: /nome, bairro ou região/ })).toHaveValue('');
+    expect(screen.getByRole('button', { name: 'Limpar' })).toBeDisabled();
   });
 
   it('Descobrir chama para o mapa com um link para Explorar, sem embutir o mapa', () => {

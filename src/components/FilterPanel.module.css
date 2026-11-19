@@ -1,0 +1,147 @@
+/* Filtros do painel "Filtrar lugares" (Figma, frame Explorar): títulos em sálvia,
+   linhas com caixa de 21 px, ícone, nome e a contagem à direita, e divisórias finas
+   entre os grupos. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Só no celular: abre e fecha os grupos. */
+.toggle {
+  align-self: flex-start;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 2px solid var(--color-green);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--color-green);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &[aria-expanded='true'] {
+    background: var(--color-green);
+    color: var(--color-cream);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-mustard);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 960px) {
+    display: none;
+  }
+}
+
+.groups {
+  display: none;
+  flex-direction: column;
+  gap: 24px;
+
+  &.open {
+    display: flex;
+  }
+
+  @media (min-width: 960px) {
+    display: flex;
+  }
+}
+
+/* Em bloco: navegadores não tratam o <legend> como item de um fieldset flex. */
+.fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 24px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.legend {
+  composes: eyebrow from './panel.module.css';
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: 21px 24px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  min-height: 40px;
+  color: var(--color-graphite);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 21px;
+  height: 21px;
+  margin: 0;
+  accent-color: var(--color-green);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid var(--color-mustard);
+    outline-offset: 2px;
+  }
+}
+
+.icon {
+  display: inline-flex;
+  justify-content: center;
+}
+
+.label {
+  overflow-wrap: anywhere;
+}
+
+.count {
+  color: var(--color-graphite);
+  font-variant-numeric: tabular-nums;
+}
+
+.price {
+  display: flex;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.priceLabel {
+  color: var(--color-graphite);
+  font-size: 16px;
+}
+
+.select {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--color-sage);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-graphite);
+  font-size: 16px;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid var(--color-mustard);
+    outline-offset: 2px;
+  }
+}
+
+.message {
+  margin: 0;
+  color: var(--color-graphite);
+  font-size: 15px;
+}
