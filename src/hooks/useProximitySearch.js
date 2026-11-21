@@ -1,10 +1,11 @@
 // src/hooks/useProximitySearch.js
 // Estado da busca "Perto de você" (issue #3): o ponto de referência (endereço escolhido
-// ou localização do navegador), o raio e os espaços dentro dele. Sem ponto, a página
-// Explorar volta a mostrar os pinos da área visível do mapa.
+// ou localização do navegador), o raio e os espaços dentro dele que atendem aos filtros
+// (user story #6). Sem ponto, a página Explorar volta a mostrar os pinos da área visível.
 import { useCallback, useEffect, useState } from 'react';
 import { distanceKm } from '../services/geo';
 import { fetchNearbyPlaces } from '../services/places';
+import { EMPTY_FILTERS, filtersKey } from '../services/searchFilters';
 import { RequestStatus } from './useApiRequest';
 import useGeolocation from './useGeolocation';
 
@@ -29,20 +30,22 @@ function withDistance(places, origin) {
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
 
-// Consulta os espaços próximos e cancela a anterior quando o ponto ou o raio mudam, para
-// que uma resposta antiga nunca sobrescreva uma mais recente. Enquanto a nova consulta
-// carrega, os espaços anteriores continuam na tela (sem piscar o mapa a cada ajuste).
-function useNearbyPlaces(origin, radiusKm) {
+// Consulta os espaços próximos e cancela a anterior quando o ponto, o raio ou os filtros
+// mudam, para que uma resposta antiga nunca sobrescreva uma mais recente. Enquanto a nova
+// consulta carrega, os espaços anteriores continuam na tela (sem piscar o mapa).
+function useNearbyPlaces(origin, radiusKm, filters) {
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState({ key: null, places: [], error: null });
   const position = origin?.position ?? null;
-  const key = position ? `${position.join(',')}|${radiusKm}|${attempt}` : null;
+  const key = position
+    ? `${position.join(',')}|${radiusKm}|${filtersKey(filters)}|${attempt}`
+    : null;
 
   useEffect(() => {
     if (!position) return undefined;
     const controller = new AbortController();
     const [lat, lng] = position;
-    fetchNearbyPlaces({ lat, lng, radiusKm }, { signal: controller.signal }).then(
+    fetchNearbyPlaces({ lat, lng, radiusKm }, { signal: controller.signal, filters }).then(
       (places) => {
         if (controller.signal.aborted) return;
         setResult({ key, places: withDistance(places, position), error: null });
@@ -53,7 +56,7 @@ function useNearbyPlaces(origin, radiusKm) {
       },
     );
     return () => controller.abort();
-    // `key` resume `position`, `radiusKm` e `attempt`.
+    // `key` resume `position`, `radiusKm`, os filtros e `attempt`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
@@ -67,14 +70,14 @@ function useNearbyPlaces(origin, radiusKm) {
   return { places: result.places, status, error: result.error, retry };
 }
 
-// Uso: const proximity = useProximitySearch();
+// Uso: const proximity = useProximitySearch(filters);
 //      proximity.setOrigin({ label: 'MASP', position: [-23.56, -46.65] });
 // `origin` é { label, position: [lat, lng], source: 'address' | 'location' } ou null.
-export default function useProximitySearch() {
+export default function useProximitySearch(filters = EMPTY_FILTERS) {
   const [origin, setOriginState] = useState(null);
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const settledRadiusKm = useDebouncedValue(radiusKm, RADIUS_DEBOUNCE_MS);
-  const nearby = useNearbyPlaces(origin, settledRadiusKm);
+  const nearby = useNearbyPlaces(origin, settledRadiusKm, filters);
   const geolocation = useGeolocation();
   const { locate: requestPosition } = geolocation;
 

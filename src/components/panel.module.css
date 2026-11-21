@@ -1,0 +1,13 @@
+/* Estilos compartilhados pelas seções do painel "Filtrar lugares" (Figma, frame Explorar). */
+
+/* Títulos "O QUE VOCÊ QUER VER?", "PARA O SEU PASSEIO": sálvia, maiúsculo, 16 px negrito. */
+.eyebrow {
+  margin: 0;
+  color: #5d7151; /* sálvia escurecida: o tom do protótipo não atinge contraste AA */
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}

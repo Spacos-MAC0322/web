@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { RequestStatus } from '../hooks/useApiRequest';
-import NearbyList, { INITIAL_COUNT } from './NearbyList';
+import PlaceResults, { INITIAL_COUNT } from './PlaceResults';
 
 const ORIGIN = { label: 'MASP', position: [-23.5614, -46.6559] };
 
@@ -20,22 +20,36 @@ function place(id, distanceKm, extra = {}) {
   };
 }
 
-function renderList(nearby, { origin = ORIGIN, radiusKm = 2 } = {}) {
-  const full = { places: [], status: RequestStatus.SUCCESS, error: null, retry: vi.fn(), ...nearby };
+function renderList(results, { origin = ORIGIN, radiusKm = 2, filtered = false } = {}) {
+  const full = { places: [], status: RequestStatus.SUCCESS, error: null, retry: vi.fn(), ...results };
   render(
     <MemoryRouter>
-      <NearbyList origin={origin} nearby={full} radiusKm={radiusKm} />
+      <PlaceResults origin={origin} results={full} radiusKm={radiusKm} filtered={filtered} />
     </MemoryRouter>,
   );
   return full;
 }
 
-describe('NearbyList', () => {
-  it('não aparece sem ponto de referência', () => {
-    const { container } = render(
-      <NearbyList origin={null} nearby={{ places: [], status: RequestStatus.IDLE }} radiusKm={2} />,
+describe('PlaceResults', () => {
+  it('sem ponto de referência, lista os espaços da área do mapa com bairro e gratuidade', () => {
+    renderList(
+      { places: [place('a', undefined, { badges: { is_free: true } }), place('b')] },
+      { origin: null },
     );
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.getByRole('heading', { name: '2 lugares no mapa' })).toBeInTheDocument();
+    expect(screen.getByText('Bela Vista · gratuito')).toBeInTheDocument();
+    expect(screen.getByText('Bela Vista')).toBeInTheDocument();
+  });
+
+  it('sugere remover filtros quando a área filtrada fica vazia', () => {
+    renderList({ places: [] }, { origin: null, filtered: true });
+    expect(screen.getByRole('heading', { name: '0 lugares no mapa' })).toBeInTheDocument();
+    expect(screen.getByText(/Remova algum filtro ou mova o mapa/)).toBeInTheDocument();
+  });
+
+  it('sem filtros, sugere mover o mapa', () => {
+    renderList({ places: [] }, { origin: null });
+    expect(screen.getByText(/Mova o mapa ou afaste o zoom/)).toBeInTheDocument();
   });
 
   it('conta os lugares do raio e mostra bairro, distância e gratuidade', () => {
@@ -63,14 +77,24 @@ describe('NearbyList', () => {
   it('sugere aumentar o raio quando não há espaços', () => {
     renderList({ places: [] }, { radiusKm: 0.5 });
     expect(screen.getByRole('heading', { name: '0 lugares em até 0,5 km de MASP' })).toBeVisible();
-    expect(screen.getByText(/Aumente o raio/)).toBeInTheDocument();
+    expect(screen.getByText(/Aumente o raio ou escolha outro ponto/)).toBeInTheDocument();
+  });
+
+  it('com filtros, também sugere remover algum quando o raio fica vazio', () => {
+    renderList({ places: [] }, { filtered: true });
+    expect(screen.getByText(/Aumente o raio, remova algum filtro/)).toBeInTheDocument();
   });
 
   it('mostra o carregamento e o erro da consulta', async () => {
     const { unmount } = render(
-      <NearbyList origin={ORIGIN} nearby={{ places: [], status: RequestStatus.LOADING }} radiusKm={2} />,
+      <PlaceResults
+        origin={ORIGIN}
+        results={{ places: [], status: RequestStatus.LOADING }}
+        radiusKm={2}
+      />,
     );
-    expect(screen.getByText('Procurando espaços por perto…')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Lugares por perto' })).toBeInTheDocument();
+    expect(screen.getByText('Procurando espaços…')).toBeInTheDocument();
     unmount();
 
     const nearby = renderList({ status: RequestStatus.ERROR, error: new Error('x') });

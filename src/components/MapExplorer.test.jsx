@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, ApiErrorKind } from '../services/api';
 import { fetchPlacesInBounds } from '../services/places';
+import usePlacesInBounds from '../hooks/usePlacesInBounds';
 import MapExplorer from './MapExplorer';
 
 // Só a chamada ao backend é simulada; mapa, hook e conversão de limites são reais.
@@ -20,10 +21,16 @@ const PIN = {
   badges: {},
 };
 
+// A página guarda usePlacesInBounds; aqui, um contêiner mínimo faz esse papel.
+function Explorer(props) {
+  const inBounds = usePlacesInBounds(props.filters);
+  return <MapExplorer inBounds={inBounds} {...props} />;
+}
+
 function renderExplorer(props = {}) {
   return render(
     <MemoryRouter>
-      <MapExplorer {...props} />
+      <Explorer {...props} />
     </MemoryRouter>,
   );
 }
@@ -109,11 +116,19 @@ describe('MapExplorer', () => {
     await screen.findByTitle('Teatro Perto');
     rerender(
       <MemoryRouter>
-        <MapExplorer />
+        <Explorer />
       </MemoryRouter>,
     );
     expect(await screen.findByTitle('Museu de Teste')).toBeInTheDocument();
     expect(fetchPlacesInBounds).toHaveBeenCalledOnce();
+  });
+
+  it('com filtros e nenhum resultado, sugere revê-los', async () => {
+    fetchPlacesInBounds.mockResolvedValue([]);
+    renderExplorer({ filtered: true });
+    expect(
+      await screen.findByText('Nenhum espaço com esses filtros nesta área.'),
+    ).toBeInTheDocument();
   });
 
   it('mostra o botão de localização abaixo do zoom quando há onLocate', async () => {

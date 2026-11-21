@@ -3,12 +3,12 @@
 // referência, "Usar minha localização" e raio ajustável. O protótipo não desenha esta
 // seção; ela segue o estilo do painel "Filtrar lugares" (título em sálvia, barra de busca).
 import { useId, useState } from 'react';
-import searchIcon from '../assets/icons/buscar.svg';
 import locateIcon from '../assets/icons/localizar.svg';
 import { RequestStatus } from '../hooks/useApiRequest';
 import useAddressSearch, { MIN_QUERY_LENGTH } from '../hooks/useAddressSearch';
 import { formatRadius } from '../services/geo';
 import RequestError from './RequestError';
+import SearchBar from './SearchBar';
 import styles from './LocationSearchControl.module.css';
 
 export const RADIUS_MIN_KM = 0.5;
@@ -66,34 +66,18 @@ function SearchFeedback({ search }) {
 }
 
 function AddressForm({ search }) {
-  const inputId = useId();
   const [query, setQuery] = useState('');
-  const submit = (event) => {
-    event.preventDefault();
-    search.search(query);
-  };
   return (
-    <form role="search" className={styles.form} onSubmit={submit}>
-      <label htmlFor={inputId} className="visually-hidden">
-        Endereço, bairro ou lugar de referência
-      </label>
-      <div className={styles.searchBar}>
-        <img src={searchIcon} alt="" width="20" height="20" className={styles.searchIcon} />
-        <input
-          id={inputId}
-          type="search"
-          className={styles.input}
-          placeholder="Endereço, bairro ou lugar"
-          autoComplete="street-address"
-          maxLength={200}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        <button type="submit" className={styles.submit}>
-          Buscar
-        </button>
-      </div>
-    </form>
+    <SearchBar
+      label="Endereço, bairro ou lugar de referência"
+      placeholder="Endereço, bairro ou lugar"
+      autoComplete="street-address"
+      maxLength={200}
+      value={query}
+      onChange={setQuery}
+      onSubmit={search.search}
+      submitLabel="Buscar"
+    />
   );
 }
 

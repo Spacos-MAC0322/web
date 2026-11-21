@@ -1,8 +1,10 @@
 // src/services/places.js
-// Consulta dos pinos do mapa: GET /api/places, filtrado pela área visível (DA04/DA05),
-// ou GET /api/places/nearby, filtrado por um raio em volta de um ponto (issue #3).
-// O backend já devolve apenas lugares publicados e com coordenadas válidas.
+// Consulta dos espaços do mapa e da lista ao lado: GET /api/search, na área visível
+// (DA04/DA05) ou num raio em volta de um ponto (issue #3), com os filtros de categoria,
+// zona e preço (user story #6). O backend já devolve apenas lugares publicados e com
+// coordenadas válidas.
 import api from './api';
+import { EMPTY_FILTERS, filterParams } from './searchFilters';
 
 // Ids vêm do backend no formato "provedor:tipo:id" e precisam ser codificados na URL.
 export function placePath(id) {
@@ -47,6 +49,7 @@ function toPin(place) {
     category: place.primary_category ?? null,
     position: [lat, lng],
     neighborhood: place.neighborhood ?? null,
+    summary: place.short_description ?? null,
     badges: place.badges ?? {},
   };
 }
@@ -70,19 +73,38 @@ export async function fetchDiscoverPlaces({ signal } = {}) {
   return Array.isArray(data) ? data.map(toCard) : [];
 }
 
-export async function fetchPlacesInBounds(boundsParams, { signal } = {}) {
-  const { data } = await api.get('/api/places', { params: boundsParams, signal });
-  return Array.isArray(data) ? data.map(toPin).filter(Boolean) : [];
-}
-
-// Espaços a até `radiusKm` de um ponto (issue #3), do mais próximo ao mais distante.
-// O backend devolve também o bairro, exibido na lista ao lado do mapa.
-export async function fetchNearbyPlaces({ lat, lng, radiusKm }, { signal } = {}) {
-  const { data } = await api.get('/api/places/nearby', {
-    params: { lat, lng, radius_km: radiusKm },
+// GET /api/search: `area` são os limites do mapa ou { lat, lng, radius_km }. Listas vão
+// repetidas (categories=a&categories=b), como o FastAPI espera, sem colchetes.
+async function searchPlaces(filters, area, { signal } = {}) {
+  const { data } = await api.get('/api/search', {
+    params: { ...filterParams(filters ?? EMPTY_FILTERS), ...area },
+    paramsSerializer: { indexes: null },
     signal,
   });
   return Array.isArray(data) ? data.map(toPin).filter(Boolean) : [];
+}
+
+// Espaços da área visível do mapa que atendem aos filtros, em ordem alfabética.
+export function fetchPlacesInBounds(boundsParams, { signal, filters } = {}) {
+  return searchPlaces(filters, boundsParams, { signal });
+}
+
+// Espaços a até `radiusKm` de um ponto (issue #3) que atendem aos filtros, do mais
+// próximo ao mais distante. Bairro e resumo aparecem na lista ao lado do mapa.
+export function fetchNearbyPlaces({ lat, lng, radiusKm }, { signal, filters } = {}) {
+  return searchPlaces(filters, { lat, lng, radius_km: radiusKm }, { signal });
+}
+
+// Opções do painel de filtros: os grupos de "O que você quer ver?" com quantos espaços há
+// em cada um e quantos espaços têm gratuidade ou preço conhecidos (`pricedPlaces`). Sem
+// nenhum, os filtros de preço ficam escondidos: não teriam resultado.
+export async function fetchFilterOptions({ signal } = {}) {
+  const { data } = await api.get('/api/search/filters', { signal });
+  const groups = Array.isArray(data?.groups)
+    ? data.groups.filter((group) => typeof group?.id === 'string' && Number.isInteger(group.count))
+    : [];
+  const pricedPlaces = Number.isInteger(data?.priced_places) ? data.priced_places : 0;
+  return { groups, pricedPlaces };
 }
 
 // Detalhes de um espaço, com curadoria e programação dos próximos 30 dias (issue #2).

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import api from './api';
 import {
   fetchDiscoverPlaces,
+  fetchFilterOptions,
   fetchNearbyPlaces,
   fetchPlaceDetail,
   fetchPlacesInBounds,
@@ -43,11 +44,44 @@ describe('toBoundsParams', () => {
 describe('fetchPlacesInBounds', () => {
   const params = { sw_lat: -23.6, sw_lng: -46.7, ne_lat: -23.5, ne_lng: -46.6 };
 
-  it('consulta GET /api/places com os limites e o sinal de cancelamento', async () => {
+  it('consulta GET /api/search com os limites e o sinal de cancelamento', async () => {
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: [] });
     const { signal } = new AbortController();
     await fetchPlacesInBounds(params, { signal });
-    expect(get).toHaveBeenCalledWith('/api/places', { params, signal });
+    expect(get).toHaveBeenCalledWith('/api/search', {
+      params,
+      paramsSerializer: { indexes: null },
+      signal,
+    });
+  });
+
+  it('envia os filtros ativos junto com a área', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: [] });
+    const filters = {
+      q: ' museu ',
+      categories: ['arte', 'musica'],
+      regions: ['Sul'],
+      free: true,
+      maxPrice: 40,
+    };
+    await fetchPlacesInBounds(params, { filters });
+    expect(get.mock.calls[0][1].params).toEqual({
+      ...params,
+      q: 'museu',
+      categories: ['arte', 'musica'],
+      regions: ['Sul'],
+      is_free: true,
+      max_price: 40,
+    });
+  });
+
+  it('repete as listas sem colchetes, como o backend espera', () => {
+    const query = api.getUri({
+      url: '/api/search',
+      params: { categories: ['arte', 'musica'] },
+      paramsSerializer: { indexes: null },
+    });
+    expect(query).toContain('categories=arte&categories=musica');
   });
 
   it('converte GeoJSON [lng, lat] em pinos [lat, lng] e descarta lugares sem coordenadas', async () => {
@@ -72,6 +106,7 @@ describe('fetchPlacesInBounds', () => {
         category: 'Museu',
         position: [-23.55, -46.63],
         neighborhood: null,
+        summary: null,
         badges,
       },
       {
@@ -80,6 +115,7 @@ describe('fetchPlacesInBounds', () => {
         category: null,
         position: [-23.56, -46.64],
         neighborhood: null,
+        summary: null,
         badges: {},
       },
     ]);
@@ -151,7 +187,7 @@ describe('fetchDiscoverPlaces', () => {
 });
 
 describe('fetchNearbyPlaces', () => {
-  it('consulta GET /api/places/nearby com o raio em km e traz o bairro de cada pino', async () => {
+  it('consulta GET /api/search com o raio em km e traz bairro e resumo de cada pino', async () => {
     const get = vi.spyOn(api, 'get').mockResolvedValue({
       data: [
         {
@@ -161,6 +197,7 @@ describe('fetchNearbyPlaces', () => {
           location: { type: 'Point', coordinates: [-46.65, -23.56] },
           badges: { is_free: true },
           neighborhood: 'Bela Vista',
+          short_description: 'Peças aos sábados.',
         },
         { id: 'sem-local', name: 'Sem local', location: null },
       ],
@@ -169,8 +206,9 @@ describe('fetchNearbyPlaces', () => {
 
     const places = await fetchNearbyPlaces({ lat: -23.5, lng: -46.6, radiusKm: 2 }, { signal });
 
-    expect(get).toHaveBeenCalledWith('/api/places/nearby', {
+    expect(get).toHaveBeenCalledWith('/api/search', {
       params: { lat: -23.5, lng: -46.6, radius_km: 2 },
+      paramsSerializer: { indexes: null },
       signal,
     });
     expect(places).toEqual([
@@ -180,13 +218,46 @@ describe('fetchNearbyPlaces', () => {
         category: 'Teatro',
         position: [-23.56, -46.65],
         neighborhood: 'Bela Vista',
+        summary: 'Peças aos sábados.',
         badges: { is_free: true },
       },
     ]);
   });
 
+  it('combina o raio com os filtros', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: [] });
+    const filters = { q: '', categories: [], regions: [], free: true, maxPrice: null };
+    await fetchNearbyPlaces({ lat: -23.5, lng: -46.6, radiusKm: 1 }, { filters });
+    expect(get.mock.calls[0][1].params).toEqual({
+      lat: -23.5,
+      lng: -46.6,
+      radius_km: 1,
+      is_free: true,
+    });
+  });
+
   it('retorna lista vazia quando a resposta não é uma lista', async () => {
     vi.spyOn(api, 'get').mockResolvedValue({ data: null });
     await expect(fetchNearbyPlaces({ lat: 0, lng: 0, radiusKm: 1 })).resolves.toEqual([]);
+  });
+});
+
+describe('fetchFilterOptions', () => {
+  it('consulta GET /api/search/filters e descarta grupos malformados', async () => {
+    const arte = { id: 'arte', label: 'Arte e Cultura', count: 3 };
+    const get = vi.spyOn(api, 'get').mockResolvedValue({
+      data: { groups: [arte, { id: 'sem-contagem', label: 'X' }, null], priced_places: 12 },
+    });
+    const { signal } = new AbortController();
+    await expect(fetchFilterOptions({ signal })).resolves.toEqual({
+      groups: [arte],
+      pricedPlaces: 12,
+    });
+    expect(get).toHaveBeenCalledWith('/api/search/filters', { signal });
+  });
+
+  it('sem resposta válida, não há grupos nem preços conhecidos', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({ data: [] });
+    await expect(fetchFilterOptions()).resolves.toEqual({ groups: [], pricedPlaces: 0 });
   });
 });
