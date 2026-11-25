@@ -1,0 +1,162 @@
+/* src/components/ItineraryTimeline.module.css */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+
+  @media (max-width: 600px) {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    .actions {
+      grid-column: 1 / -1;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-cream);
+  font-family: var(--heading);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.nameLink {
+  color: var(--text-h);
+  text-decoration: none;
+}
+
+.nameLink:hover {
+  text-decoration: underline;
+}
+
+.nameLink:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.category {
+  color: var(--color-graphite);
+  font-size: 15px;
+}
+
+.missing,
+.timeError {
+  color: var(--error-text);
+  font-size: 15px;
+}
+
+.times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-top: 4px;
+}
+
+.timeField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.timeInput {
+  min-width: 120px;
+  padding: 8px 12px;
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+}
+
+.timeInput:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 1px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--accent-border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-green);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.iconButton:hover:not(:disabled) {
+  background: var(--accent-bg);
+}
+
+.iconButton:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+.iconButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.remove {
+  color: var(--error-text);
+}
+
+.empty {
+  padding: 24px;
+  border: 1px dashed var(--accent-border);
+  border-radius: 20px;
+  color: var(--color-graphite);
+}

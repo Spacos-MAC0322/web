@@ -67,7 +67,9 @@ async function fetchPlaceNames(placeIds, signal) {
 }
 
 export default function useItineraryEditor(id = null, { initial = null } = {}) {
-  const seeded = Boolean(id && initial?.itinerary?.id === id);
+  // Decidido uma vez, ao montar: `initial` mudar depois (ex.: a página limpar o state da
+  // navegação) não pode recarregar o roteiro por cima das edições.
+  const [seeded] = useState(() => Boolean(id && initial?.itinerary?.id === id));
   const [draft, dispatch] = useReducer(draftReducer, seeded ? initial : null, initDraft);
   const [savedId, setSavedId] = useState(id);
   // O que está salvo no backend, no formato do envio: compará-lo ao rascunho diz se há

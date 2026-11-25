@@ -204,6 +204,17 @@ describe('useItineraryEditor: roteiro salvo', () => {
     expect(fetchItinerary).not.toHaveBeenCalled();
   });
 
+  it('não recarrega o roteiro quando `initial` some depois de montar', () => {
+    const { result, rerender } = renderHook(
+      ({ initial }) => useItineraryEditor('abc', { initial }),
+      { initialProps: { initial: { itinerary: SAVED, places: {} } } },
+    );
+    act(() => result.current.setTitle('Editado'));
+    rerender({ initial: null });
+    expect(fetchItinerary).not.toHaveBeenCalled();
+    expect(result.current.draft.title).toBe('Editado');
+  });
+
   it('ignora `initial` de outro roteiro', async () => {
     fetchItinerary.mockResolvedValue(SAVED);
     const { result } = renderHook(() =>
