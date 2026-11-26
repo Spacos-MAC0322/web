@@ -10,6 +10,7 @@ import {
   fetchItinerary,
   listItineraries,
   replaceItinerary,
+  validateItinerary,
 } from '../services/itineraries';
 import { fetchPlaceDetail, fetchPlacesByText } from '../services/places';
 import { formatItineraryDate, itineraryPath, stopCountText } from './itineraryFormat';
@@ -22,6 +23,7 @@ vi.mock('../services/itineraries', () => ({
   fetchItinerary: vi.fn(),
   listItineraries: vi.fn(),
   replaceItinerary: vi.fn(),
+  validateItinerary: vi.fn(),
 }));
 vi.mock('../services/places', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -78,6 +80,7 @@ function renderAt(path, auth = LOGGED_IN) {
 }
 
 beforeEach(() => {
+  validateItinerary.mockResolvedValue([]);
   fetchPlaceDetail.mockImplementation(async (id) => ({
     id,
     name: id === 'museu' ? 'Museu Afro Brasil' : 'Teatro Oficina',
@@ -229,6 +232,73 @@ describe('editor de roteiro', () => {
       stops: [{ placeId: 'museu', startTime: null, endTime: null, eventId: null }],
     });
     expect(fetchPlaceDetail).not.toHaveBeenCalled();
+  });
+
+  describe('alerta de conflito (#88)', () => {
+    const CLOSED = 'O local estará fechado no horário planejado.';
+
+    it('avisa que o local estará fechado enquanto o roteiro é montado', async () => {
+      fetchItinerary.mockResolvedValue({ ...SAVED, stops: [stop('museu')] });
+      validateItinerary.mockResolvedValue([stop('museu', { conflictWarning: CLOSED })]);
+      renderAt('/rotas/abc');
+      const item = await screen.findByRole('listitem', { name: 'Parada 1: Museu Afro Brasil' });
+      expect(validateItinerary).not.toHaveBeenCalled();
+
+      await userEvent.type(within(item).getByLabelText('Chegada'), '03:00');
+      expect(await screen.findByText('Verificando horários de funcionamento…')).toBeInTheDocument();
+      expect(await within(item).findByText(/O local estará fechado/)).toHaveTextContent(`Fechado: ${CLOSED}`);
+      expect(validateItinerary).toHaveBeenLastCalledWith(
+        {
+          date: '2026-11-28',
+          stops: [{ placeId: 'museu', startTime: '03:00', endTime: null, eventId: null }],
+        },
+        expect.anything(),
+      );
+      expect(screen.queryByText('Verificando horários de funcionamento…')).not.toBeInTheDocument();
+    });
+
+    it('pede a data para conferir os horários de funcionamento', async () => {
+      fetchItinerary.mockResolvedValue({ ...SAVED, date: null });
+      renderAt('/rotas/abc');
+      expect(
+        await screen.findByText('Defina a data para verificar os horários de funcionamento.'),
+      ).toBeInTheDocument();
+      expect(validateItinerary).not.toHaveBeenCalled();
+    });
+
+    it('mostra a falha da verificação sem impedir salvar', async () => {
+      fetchItinerary.mockResolvedValue(SAVED);
+      validateItinerary
+        .mockRejectedValueOnce(new ApiError('Fora do ar.', { kind: ApiErrorKind.SERVER, status: 503 }))
+        .mockResolvedValueOnce([stop('teatro'), stop('museu', { startTime: '10:00' })]);
+      renderAt('/rotas/abc');
+      await screen.findByRole('listitem', { name: 'Parada 1: Museu Afro Brasil' });
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Mover para cima a parada 2 (Teatro Oficina)' }),
+      );
+      expect(await screen.findByText('Fora do ar.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Salvar alterações' })).toBeEnabled();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+      await waitFor(() => expect(validateItinerary).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(screen.queryByText('Fora do ar.')).not.toBeInTheDocument());
+    });
+
+    it('avisa conflito entre paradas sem impedir salvar', async () => {
+      fetchItinerary.mockResolvedValue({
+        ...SAVED,
+        stops: [stop('museu', { startTime: '14:00' }), stop('teatro', { startTime: '10:00' })],
+      });
+      renderAt('/rotas/abc');
+      const second = await screen.findByRole('listitem', { name: 'Parada 2: Teatro Oficina' });
+      expect(within(second).getByText(/Começa antes da parada 1/)).toHaveTextContent(
+        'Horário: Começa antes da parada 1, que é às 14:00.',
+      );
+
+      await userEvent.type(screen.getByLabelText('Nome do passeio'), '!');
+      expect(screen.getByRole('button', { name: 'Salvar alterações' })).toBeEnabled();
+    });
   });
 
   it('abre um roteiro salvo, reordena e salva', async () => {

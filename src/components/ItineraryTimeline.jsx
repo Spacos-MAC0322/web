@@ -18,8 +18,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Link } from 'react-router-dom';
-import { dragMove, stopTimeError } from '../pages/itineraryDraft';
+import { dragMove, scheduleConflicts, stopTimeError } from '../pages/itineraryDraft';
 import { placePath } from '../services/places';
+import ConflictBadge from './ConflictBadge';
 import styles from './ItineraryTimeline.module.css';
 
 const UNKNOWN_NAME = 'Local sem nome';
@@ -75,7 +76,17 @@ function TimeField({ label, value, onChange, disabled, describedBy }) {
   );
 }
 
-function StopItem({ stop, index, total, place, disabled, onMove, onRemove, onTimeChange }) {
+function StopItem({
+  stop,
+  index,
+  total,
+  place,
+  scheduleConflict,
+  disabled,
+  onMove,
+  onRemove,
+  onTimeChange,
+}) {
   const number = index + 1;
   const name = stopName(place);
   const timeError = stopTimeError(stop);
@@ -149,6 +160,8 @@ function StopItem({ stop, index, total, place, disabled, onMove, onRemove, onTim
             {timeError}
           </p>
         )}
+        {stop.conflictWarning && <ConflictBadge tone="closed">{stop.conflictWarning}</ConflictBadge>}
+        {scheduleConflict && <ConflictBadge tone="schedule">{scheduleConflict}</ConflictBadge>}
       </div>
 
       <div className={styles.actions}>
@@ -206,6 +219,8 @@ export default function ItineraryTimeline({
     );
   }
 
+  const conflicts = scheduleConflicts(stops);
+
   const handleDragEnd = ({ active, over }) => {
     const move = dragMove(stops, active.id, over?.id);
     if (move) onMove(move.from, move.to);
@@ -230,6 +245,7 @@ export default function ItineraryTimeline({
               index={index}
               total={stops.length}
               place={places[stop.placeId]}
+              scheduleConflict={conflicts[stop.key] ?? null}
               disabled={disabled}
               onMove={onMove}
               onRemove={onRemove}

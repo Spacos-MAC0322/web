@@ -17,6 +17,7 @@ export const DraftAction = Object.freeze({
   SET_TIME: 'setTime',
   SET_PLACES: 'setPlaces',
   APPLY_WARNINGS: 'applyWarnings',
+  APPLY_CLOSURES: 'applyClosures',
 });
 
 const TIME_FIELDS = new Set(['startTime', 'endTime']);
@@ -101,14 +102,29 @@ function setTime(state, { key, field, value }) {
   };
 }
 
-// Avisos que o backend calculou para `input` (o envio, na mesma ordem das paradas). Se o
-// rascunho mudou desde o envio, a resposta é antiga e é descartada; as chaves das paradas
-// são mantidas para não remontar a lista.
+// Avisos que o backend calculou para `input` (o envio, na mesma ordem das paradas). Se a
+// data ou as paradas mudaram desde o envio, a resposta é antiga e é descartada; o título
+// não influencia os avisos. As chaves das paradas são mantidas para não remontar a lista.
 function applyWarnings(state, { input, warnings }) {
   const current = toItineraryInput(state);
-  if (sameInput(current, input) === false || warnings.length !== state.stops.length) {
-    return state;
-  }
+  const stale =
+    current.date !== (input.date ?? null) ||
+    !sameInput(current.stops, input.stops) ||
+    warnings.length !== state.stops.length;
+  if (stale) return state;
+  return {
+    ...state,
+    stops: state.stops.map((stop, index) => ({
+      ...stop,
+      conflictWarning: warnings[index] ?? null,
+    })),
+  };
+}
+
+// Resultado de POST /validate para a chave `key` (closureCheckKey). Descartado se a data ou
+// as chegadas mudaram enquanto a consulta acontecia.
+function applyClosures(state, { key, warnings }) {
+  if (closureCheckKey(state) !== key || warnings.length !== state.stops.length) return state;
   return {
     ...state,
     stops: state.stops.map((stop, index) => ({
@@ -146,6 +162,8 @@ export function draftReducer(state, action) {
       return { ...state, places: { ...state.places, ...mapPlaces(action.places) } };
     case DraftAction.APPLY_WARNINGS:
       return applyWarnings(state, action);
+    case DraftAction.APPLY_CLOSURES:
+      return applyClosures(state, action);
     default:
       return state;
   }
@@ -169,7 +187,6 @@ export function toItineraryInput(state) {
 // "HH:MM" e "HH:MM:SS" se comparam como texto depois de completar os segundos.
 export function stopTimeError(stop) {
   if (!stop.startTime || !stop.endTime) return null;
-  const seconds = (time) => (time.length === 5 ? `${time}:00` : time);
   return seconds(stop.endTime) <= seconds(stop.startTime)
     ? 'A saída precisa ser depois da chegada.'
     : null;
@@ -181,6 +198,75 @@ export function canSaveDraft(state) {
     state.stops.length <= MAX_STOPS &&
     state.stops.every((stop) => stopTimeError(stop) === null)
   );
+}
+
+// "14:00:00" → "14:00", para exibir.
+export function shortTime(time) {
+  return time ? time.slice(0, 5) : '';
+}
+
+function seconds(time) {
+  return time.length === 5 ? `${time}:00` : time;
+}
+
+// Conflitos entre paradas seguidas (issue #88, aviso amarelo), por chave da parada. Cada
+// parada com chegada é comparada à última parada anterior que tem horário; paradas sem
+// horário são puladas. O roteiro tem uma só data: passar da meia-noite também é conflito.
+// Só avisa, não impede salvar: o backend aceita e o usuário pode ajustar depois.
+export function scheduleConflicts(stops) {
+  const conflicts = {};
+  let previous = null;
+  stops.forEach((stop, index) => {
+    const start = stop.startTime ? seconds(stop.startTime) : null;
+    if (start && previous) {
+      const label = `parada ${previous.number}`;
+      if (previous.start && start < previous.start) {
+        conflicts[stop.key] =
+          `Começa antes da ${label}, que é às ${shortTime(previous.start)}.`;
+      } else if (previous.start && start === previous.start) {
+        conflicts[stop.key] = `Começa no mesmo horário da ${label} (${shortTime(start)}).`;
+      } else if (previous.end && start < previous.end) {
+        conflicts[stop.key] =
+          `Começa antes de você sair da ${label}, às ${shortTime(previous.end)}.`;
+      }
+    }
+    if (stop.startTime || stop.endTime) {
+      previous = {
+        number: index + 1,
+        start,
+        end: stop.endTime ? seconds(stop.endTime) : null,
+      };
+    }
+  });
+  return conflicts;
+}
+
+// O que o aviso de fechamento (POST /validate) leva em conta: a data e a chegada de cada
+// local. Mudou essa chave, os horários de funcionamento precisam ser conferidos de novo.
+export function closureCheckKey(state) {
+  return JSON.stringify({
+    date: state.date || null,
+    stops: state.stops.map((stop) => [stop.placeId, stop.startTime || null]),
+  });
+}
+
+// O inverso de closureCheckKey: o que enviar a validateItinerary para conferir essa chave.
+export function closureCheckRequest(key) {
+  const { date, stops } = JSON.parse(key);
+  return {
+    date,
+    stops: stops.map(([placeId, startTime]) => ({
+      placeId,
+      startTime,
+      endTime: null,
+      eventId: null,
+    })),
+  };
+}
+
+// Há o que conferir no backend: data definida e ao menos uma parada com chegada.
+export function needsClosureCheck(state) {
+  return Boolean(state.date) && state.stops.some((stop) => stop.startTime);
 }
 
 // Fim de um arrasto (@dnd-kit): a parada `activeKey` foi solta sobre `overKey`. Devolve

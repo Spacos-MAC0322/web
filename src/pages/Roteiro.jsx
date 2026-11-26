@@ -7,6 +7,7 @@ import ItineraryPlacePicker from '../components/ItineraryPlacePicker';
 import ItineraryTimeline from '../components/ItineraryTimeline';
 import RequestError from '../components/RequestError';
 import { AuthStatus, useAuth } from '../hooks/useAuth';
+import { CheckStatus } from '../hooks/useConflictCheck';
 import useItineraryEditor, { EditorStatus, Mutation } from '../hooks/useItineraryEditor';
 import { MAX_STOPS, MAX_TITLE_LENGTH } from './itineraryDraft';
 import { itineraryPath, NEW_ITINERARY_PATH } from './itineraryFormat';
@@ -16,6 +17,7 @@ import styles from './Roteiro.module.css';
 const LOAD_ERROR = 'Não foi possível carregar este roteiro. Tente novamente.';
 const SAVE_ERROR = 'Não foi possível salvar o roteiro. Tente novamente.';
 const DELETE_CONFIRMATION = 'Excluir este roteiro? Essa ação não pode ser desfeita.';
+const CHECK_ERROR = 'Não foi possível verificar os horários de funcionamento agora.';
 
 function BackLink() {
   return (
@@ -46,6 +48,31 @@ function useWarnBeforeUnload(active) {
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [active]);
+}
+
+// Situação da conferência dos horários de funcionamento (#88), abaixo das paradas.
+function ClosureCheckNote({ editor }) {
+  const { draft, closureCheck } = editor;
+  const hasArrival = draft.stops.some((stop) => stop.startTime);
+  if (hasArrival && !draft.date) {
+    return (
+      <p className={styles.hint}>Defina a data para verificar os horários de funcionamento.</p>
+    );
+  }
+  if (closureCheck.status === CheckStatus.ERROR) {
+    return (
+      <RequestError
+        error={closureCheck.error}
+        onRetry={closureCheck.retry}
+        fallbackMessage={CHECK_ERROR}
+      />
+    );
+  }
+  return (
+    <p className={styles.hint} aria-live="polite">
+      {closureCheck.status === CheckStatus.CHECKING ? 'Verificando horários de funcionamento…' : ''}
+    </p>
+  );
 }
 
 function SaveStatus({ editor }) {
@@ -160,6 +187,7 @@ function ItineraryEditor({ id, initial }) {
           onRemove={editor.removeStop}
           onTimeChange={editor.setTime}
         />
+        <ClosureCheckNote editor={editor} />
       </section>
 
       <ItineraryPlacePicker

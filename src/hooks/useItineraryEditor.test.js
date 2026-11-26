@@ -6,6 +6,7 @@ import {
   deleteItinerary,
   fetchItinerary,
   replaceItinerary,
+  validateItinerary,
 } from '../services/itineraries';
 import { fetchPlaceDetail } from '../services/places';
 import useItineraryEditor, { EditorStatus, Mutation } from './useItineraryEditor';
@@ -15,6 +16,7 @@ vi.mock('../services/itineraries', () => ({
   deleteItinerary: vi.fn(),
   fetchItinerary: vi.fn(),
   replaceItinerary: vi.fn(),
+  validateItinerary: vi.fn(),
 }));
 vi.mock('../services/places', () => ({ fetchPlaceDetail: vi.fn() }));
 
@@ -53,6 +55,7 @@ function deferred() {
 }
 
 beforeEach(() => {
+  validateItinerary.mockResolvedValue([]);
   fetchPlaceDetail.mockImplementation(async (id) =>
     id === 'museu'
       ? { id, name: 'Museu Afro Brasil', primary_category: 'Museu' }
@@ -264,8 +267,10 @@ describe('useItineraryEditor: roteiro salvo', () => {
     await act(async () => {
       expect(await result.current.save()).toBeNull();
     });
-    // Edição durante o envio: a resposta não pode desfazê-la.
-    act(() => result.current.setTitle('Editado durante o envio'));
+    // Edição de horário durante o envio: a resposta (antiga) não pode desfazê-la.
+    act(() =>
+      result.current.setTime(result.current.draft.stops[1].key, 'endTime', '13:00'),
+    );
 
     // Avisos da resposta diferem dos atuais: se fossem aplicados, o teste perceberia.
     await act(async () => {
@@ -278,7 +283,7 @@ describe('useItineraryEditor: roteiro salvo', () => {
 
     expect(replaceItinerary).toHaveBeenCalledTimes(1);
     expect(result.current.mutation).toBe(Mutation.IDLE);
-    expect(result.current.draft.title).toBe('Editado durante o envio');
+    expect(result.current.draft.stops[1].endTime).toBe('13:00');
     expect(result.current.isDirty).toBe(true);
     // Mover não muda a chegada: o museu segue com o aviso carregado do backend.
     expect(result.current.draft.stops.map((item) => item.conflictWarning)).toEqual([null, CLOSED]);
