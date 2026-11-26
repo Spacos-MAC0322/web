@@ -1,0 +1,96 @@
+/* src/components/WeatherBadge.module.css */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: clamp(18px, 3vw, 24px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.icon {
+  font-size: 44px;
+  line-height: 1;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.condition {
+  font-family: var(--heading);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.date,
+.note {
+  color: var(--color-graphite);
+  font-size: 15px;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 0;
+}
+
+.facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.facts dt {
+  color: var(--color-graphite);
+  font-size: 14px;
+}
+
+.facts dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.recommendation {
+  padding: 10px 14px;
+  border-left: 4px solid;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.outdoor {
+  border-color: var(--color-green);
+  background: var(--accent-bg);
+  color: var(--color-green);
+}
+
+.mixed {
+  border-color: var(--color-mustard);
+  background: rgba(224, 159, 62, 0.16);
+  color: #6b4a12;
+}
+
+.indoor {
+  border-color: var(--color-terracotta);
+  background: rgba(200, 109, 81, 0.12);
+  color: var(--error-text);
+}

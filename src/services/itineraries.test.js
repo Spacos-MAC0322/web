@@ -5,6 +5,7 @@ import {
   createItinerary,
   deleteItinerary,
   fetchItinerary,
+  fetchWeather,
   listItineraries,
   replaceItinerary,
   validateItinerary,
@@ -238,6 +239,47 @@ describe('services/itineraries', () => {
       message: 'Este roteiro já tem 50 paradas, o limite.',
     });
     expect(put).not.toHaveBeenCalled();
+  });
+
+  it('fetchWeather consulta a previsão da data e normaliza os campos', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({
+      data: {
+        weather_forecast: {
+          date: '2026-11-28',
+          temperature_min: 18.5,
+          temperature_max: 27.2,
+          weather_code: 3,
+          precipitation_probability: 40,
+        },
+        weather_warning: null,
+      },
+    });
+    const { signal } = new AbortController();
+
+    await expect(fetchWeather('2026-11-28', { signal })).resolves.toEqual({
+      forecast: {
+        date: '2026-11-28',
+        minTemperature: 18.5,
+        maxTemperature: 27.2,
+        weatherCode: 3,
+        rainChance: 40,
+      },
+      warning: null,
+    });
+    expect(get).toHaveBeenCalledWith('/api/itineraries/weather', {
+      params: { date: '2026-11-28' },
+      signal,
+    });
+  });
+
+  it('fetchWeather devolve o aviso quando não há previsão', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({
+      data: { weather_forecast: null, weather_warning: 'Data fora da janela de previsão do tempo.' },
+    });
+    await expect(fetchWeather('2027-03-01')).resolves.toEqual({
+      forecast: null,
+      warning: 'Data fora da janela de previsão do tempo.',
+    });
   });
 
   it('propaga o erro da API sem alterá-lo', async () => {
