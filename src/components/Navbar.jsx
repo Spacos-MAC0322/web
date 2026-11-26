@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import { NavLink, Link } from 'react-router-dom';
-import logoSpacos from '../assets/logo.png'; //Logo extraida do Figma, mas podemos atualizar depois
+import logoSpacos from '../assets/logo.svg'; //Logo extraida do Figma, mas podemos atualizar depois
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
