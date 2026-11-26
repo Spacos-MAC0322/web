@@ -11,6 +11,7 @@ import {
   listItineraries,
   replaceItinerary,
   validateItinerary,
+  fetchWeather,
 } from '../services/itineraries';
 import { fetchPlaceDetail, fetchPlacesByText } from '../services/places';
 import { formatItineraryDate, itineraryPath, stopCountText } from './itineraryFormat';
@@ -24,6 +25,7 @@ vi.mock('../services/itineraries', () => ({
   listItineraries: vi.fn(),
   replaceItinerary: vi.fn(),
   validateItinerary: vi.fn(),
+  fetchWeather: vi.fn(),
 }));
 vi.mock('../services/places', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -81,6 +83,7 @@ function renderAt(path, auth = LOGGED_IN) {
 
 beforeEach(() => {
   validateItinerary.mockResolvedValue([]);
+  fetchWeather.mockResolvedValue({ forecast: null, warning: 'Data fora da janela de previsão do tempo.' });
   fetchPlaceDetail.mockImplementation(async (id) => ({
     id,
     name: id === 'museu' ? 'Museu Afro Brasil' : 'Teatro Oficina',
@@ -232,6 +235,28 @@ describe('editor de roteiro', () => {
       stops: [{ placeId: 'museu', startTime: null, endTime: null, eventId: null }],
     });
     expect(fetchPlaceDetail).not.toHaveBeenCalled();
+  });
+
+  it('mostra a previsão do tempo da data do roteiro e acompanha a mudança de data', async () => {
+    fetchItinerary.mockResolvedValue(SAVED);
+    fetchWeather.mockResolvedValue({
+      forecast: {
+        date: '2026-11-28',
+        minTemperature: 17,
+        maxTemperature: 25,
+        weatherCode: 61,
+        rainChance: 70,
+      },
+      warning: null,
+    });
+    renderAt('/rotas/abc');
+    const card = await screen.findByRole('region', { name: 'Previsão do tempo em São Paulo' });
+    expect(await within(card).findByText('Chuva')).toBeInTheDocument();
+    expect(within(card).getByText(/prefira museus/)).toBeInTheDocument();
+    expect(fetchWeather).toHaveBeenCalledWith('2026-11-28', expect.anything());
+
+    await userEvent.clear(screen.getByLabelText('Data'));
+    expect(screen.queryByRole('region', { name: 'Previsão do tempo em São Paulo' })).not.toBeInTheDocument();
   });
 
   describe('alerta de conflito (#88)', () => {

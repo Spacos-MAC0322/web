@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import ItineraryPlacePicker from '../components/ItineraryPlacePicker';
 import ItineraryTimeline from '../components/ItineraryTimeline';
 import RequestError from '../components/RequestError';
+import WeatherBadge from '../components/WeatherBadge';
 import { AuthStatus, useAuth } from '../hooks/useAuth';
 import { CheckStatus } from '../hooks/useConflictCheck';
 import useItineraryEditor, { EditorStatus, Mutation } from '../hooks/useItineraryEditor';
@@ -169,6 +170,8 @@ function ItineraryEditor({ id, initial }) {
           />
         </div>
       </section>
+
+      <WeatherBadge date={draft.date} />
 
       <section className={styles.stops} aria-labelledby={`${titleId}-paradas`}>
         <div className={styles.sectionHeader}>

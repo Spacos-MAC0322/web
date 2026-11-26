@@ -110,6 +110,26 @@ export async function addPlaceToItinerary(id, placeId, { signal } = {}) {
   );
 }
 
+// Previsão do tempo em São Paulo para `date` (YYYY-MM-DD), de hoje até 15 dias à frente
+// (user story #13). Fora dessa janela, ou com a Open-Meteo indisponível, o backend responde
+// 200 com forecast null e um aviso em `warning`.
+export async function fetchWeather(date, { signal } = {}) {
+  const { data } = await api.get('/api/itineraries/weather', { params: { date }, signal });
+  const forecast = data?.weather_forecast;
+  return {
+    forecast: forecast
+      ? {
+          date: forecast.date,
+          minTemperature: forecast.temperature_min,
+          maxTemperature: forecast.temperature_max,
+          weatherCode: forecast.weather_code,
+          rainChance: forecast.precipitation_probability ?? null,
+        }
+      : null,
+    warning: data?.weather_warning ?? null,
+  };
+}
+
 // Confere os horários sem salvar. Exige data; devolve os avisos na mesma ordem das paradas.
 export async function validateItinerary({ date, stops }, { signal } = {}) {
   const { data } = await api.post(
