@@ -121,6 +121,44 @@ describe('ItineraryTimeline', () => {
     expect(handle).toHaveAccessibleDescription(/pressione espaço ou Enter para pegar a parada/);
   });
 
+  it('mostra o aviso vermelho de local fechado vindo do backend', () => {
+    renderTimeline({
+      stops: [
+        stop('k1', 'museu', {
+          startTime: '12:00',
+          conflictWarning: 'O local estará fechado no horário planejado.',
+        }),
+      ],
+    });
+    const item = screen.getByRole('listitem', { name: 'Parada 1: Museu Afro Brasil' });
+    expect(within(item).getByText(/O local estará fechado no horário planejado/)).toHaveTextContent(
+      'Fechado: O local estará fechado no horário planejado.',
+    );
+  });
+
+  it('mostra o aviso amarelo quando a parada começa antes da anterior', () => {
+    renderTimeline({
+      stops: [stop('k1', 'museu', { startTime: '14:00' }), stop('k2', 'teatro', { startTime: '10:00' })],
+    });
+    const [first, second] = screen.getAllByRole('listitem');
+    expect(within(first).queryByText(/Horário:/)).not.toBeInTheDocument();
+    expect(within(second).getByText(/Começa antes da parada 1/)).toHaveTextContent(
+      'Horário: Começa antes da parada 1, que é às 14:00.',
+    );
+  });
+
+  it('pode mostrar os dois avisos na mesma parada', () => {
+    renderTimeline({
+      stops: [
+        stop('k1', 'museu', { startTime: '10:00', endTime: '12:00' }),
+        stop('k2', 'teatro', { startTime: '11:00', conflictWarning: 'Fechado nesse horário.' }),
+      ],
+    });
+    const second = screen.getByRole('listitem', { name: 'Parada 2: Teatro Oficina' });
+    expect(within(second).getByText(/Fechado nesse horário/)).toBeInTheDocument();
+    expect(within(second).getByText(/Começa antes de você sair da parada 1/)).toBeInTheDocument();
+  });
+
   it('desativa tudo enquanto o roteiro é salvo', () => {
     renderTimeline({ disabled: true });
     for (const button of screen.getAllByRole('button')) expect(button).toBeDisabled();

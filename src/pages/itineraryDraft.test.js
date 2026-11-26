@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
   canSaveDraft,
+  closureCheckKey,
+  closureCheckRequest,
   createDraft,
   DraftAction,
   draftReducer,
   dragMove,
   MAX_STOPS,
   MAX_TITLE_LENGTH,
+  needsClosureCheck,
+  scheduleConflicts,
+  shortTime,
   stopTimeError,
   toItineraryInput,
   unnamedPlaceIds,
@@ -193,6 +198,14 @@ describe('draftReducer', () => {
     expect(next.stops.map((stop) => stop.key)).toEqual(state.stops.map((stop) => stop.key));
   });
 
+  it('aplica os avisos mesmo se só o título mudou desde o envio', () => {
+    const sent = apply({ type: DraftAction.SET_TITLE, title: 'x' }, add(MUSEU));
+    const input = toItineraryInput(sent);
+    const renamed = draftReducer(sent, { type: DraftAction.SET_TITLE, title: 'Outro nome' });
+    const next = draftReducer(renamed, { type: DraftAction.APPLY_WARNINGS, input, warnings: [CLOSED] });
+    expect(next.stops[0].conflictWarning).toBe(CLOSED);
+  });
+
   it('descarta avisos de um envio antigo ou com outra quantidade de paradas', () => {
     const sent = apply({ type: DraftAction.SET_TITLE, title: 'x' }, add(MUSEU));
     const input = toItineraryInput(sent);
@@ -266,6 +279,142 @@ describe('stopTimeError e canSaveDraft', () => {
     ].reduce(draftReducer, titled);
     expect(canSaveDraft(inverted)).toBe(false);
     expect(canSaveDraft(apply({ type: DraftAction.SET_TITLE, title: '   ' }))).toBe(false);
+  });
+});
+
+describe('scheduleConflicts', () => {
+  const timed = (key, startTime = '', endTime = '') => ({ key, startTime, endTime });
+
+  it('não avisa quando as paradas seguem em ordem', () => {
+    expect(
+      scheduleConflicts([
+        timed('a', '10:00', '12:00'),
+        timed('b', '12:00', '13:00'),
+        timed('c', '15:30:00'),
+      ]),
+    ).toEqual({});
+  });
+
+  it('avisa quando uma parada começa antes da anterior', () => {
+    expect(scheduleConflicts([timed('a', '14:00'), timed('b', '10:00')])).toEqual({
+      b: 'Começa antes da parada 1, que é às 14:00.',
+    });
+  });
+
+  it('avisa quando começa antes de sair da anterior', () => {
+    expect(scheduleConflicts([timed('a', '10:00', '12:00'), timed('b', '11:30')])).toEqual({
+      b: 'Começa antes de você sair da parada 1, às 12:00.',
+    });
+  });
+
+  it('avisa quando começa no mesmo horário da anterior', () => {
+    expect(scheduleConflicts([timed('a', '10:00'), timed('b', '10:00:00')])).toEqual({
+      b: 'Começa no mesmo horário da parada 1 (10:00).',
+    });
+  });
+
+  it('compara com a última parada que tem horário, pulando as sem horário', () => {
+    expect(
+      scheduleConflicts([timed('a', '10:00', '12:00'), timed('b'), timed('c', '11:00')]),
+    ).toEqual({ c: 'Começa antes de você sair da parada 1, às 12:00.' });
+  });
+
+  it('usa só a saída da anterior quando ela não tem chegada', () => {
+    expect(scheduleConflicts([timed('a', '', '12:00'), timed('b', '11:00')])).toEqual({
+      b: 'Começa antes de você sair da parada 1, às 12:00.',
+    });
+    expect(scheduleConflicts([timed('a', '', '12:00'), timed('b', '12:30')])).toEqual({});
+  });
+
+  it('trata passar da meia-noite como conflito, pois o roteiro tem uma só data', () => {
+    expect(scheduleConflicts([timed('a', '23:00'), timed('b', '01:00')])).toEqual({
+      b: 'Começa antes da parada 1, que é às 23:00.',
+    });
+  });
+
+  it('compara cada parada com a imediatamente anterior, mesmo depois de um conflito', () => {
+    expect(
+      scheduleConflicts([timed('a', '14:00'), timed('b', '10:00'), timed('c', '11:00')]),
+    ).toEqual({ b: 'Começa antes da parada 1, que é às 14:00.' });
+  });
+});
+
+describe('verificação de fechamento', () => {
+  it('a chave depende só da data e das chegadas', () => {
+    const state = apply(
+      { type: DraftAction.SET_DATE, date: '2026-11-18' },
+      add(MUSEU),
+      add(TEATRO),
+    );
+    const key = closureCheckKey(state);
+    const renamed = draftReducer(state, { type: DraftAction.SET_TITLE, title: 'Outro' });
+    const withEnd = draftReducer(state, {
+      type: DraftAction.SET_TIME,
+      key: state.stops[0].key,
+      field: 'endTime',
+      value: '18:00',
+    });
+    const withStart = draftReducer(state, {
+      type: DraftAction.SET_TIME,
+      key: state.stops[0].key,
+      field: 'startTime',
+      value: '10:00',
+    });
+    expect(closureCheckKey(renamed)).toBe(key);
+    expect(closureCheckKey(withEnd)).toBe(key);
+    expect(closureCheckKey(withStart)).not.toBe(key);
+    expect(closureCheckKey(toItineraryInput(state))).toBe(key);
+  });
+
+  it('closureCheckRequest monta o envio do /validate a partir da chave', () => {
+    const state = draftReducer(apply({ type: DraftAction.SET_DATE, date: '2026-11-18' }, add(MUSEU)), {
+      type: DraftAction.SET_TIME,
+      key: 'stop-1',
+      field: 'startTime',
+      value: '10:00',
+    });
+    expect(closureCheckRequest(closureCheckKey(state))).toEqual({
+      date: '2026-11-18',
+      stops: [{ placeId: 'museu', startTime: '10:00', endTime: null, eventId: null }],
+    });
+  });
+
+  it('só há o que conferir com data e alguma chegada', () => {
+    const dated = apply({ type: DraftAction.SET_DATE, date: '2026-11-18' }, add(MUSEU));
+    expect(needsClosureCheck(dated)).toBe(false);
+    const timed = draftReducer(dated, {
+      type: DraftAction.SET_TIME,
+      key: dated.stops[0].key,
+      field: 'startTime',
+      value: '10:00',
+    });
+    expect(needsClosureCheck(timed)).toBe(true);
+    expect(needsClosureCheck({ ...timed, date: '' })).toBe(false);
+  });
+
+  it('APPLY_CLOSURES aplica o resultado só se a chave ainda for a atual', () => {
+    const state = apply({ type: DraftAction.SET_DATE, date: '2026-11-17' }, add(MUSEU));
+    const key = closureCheckKey(state);
+    const applied = draftReducer(state, {
+      type: DraftAction.APPLY_CLOSURES,
+      key,
+      warnings: [CLOSED],
+    });
+    expect(applied.stops[0].conflictWarning).toBe(CLOSED);
+
+    const moved = draftReducer(state, { type: DraftAction.SET_DATE, date: '2026-11-18' });
+    expect(
+      draftReducer(moved, { type: DraftAction.APPLY_CLOSURES, key, warnings: [CLOSED] }),
+    ).toBe(moved);
+    expect(
+      draftReducer(state, { type: DraftAction.APPLY_CLOSURES, key, warnings: [] }),
+    ).toBe(state);
+  });
+
+  it('shortTime corta os segundos', () => {
+    expect(shortTime('14:00:00')).toBe('14:00');
+    expect(shortTime('09:30')).toBe('09:30');
+    expect(shortTime(null)).toBe('');
   });
 });
 

@@ -9,12 +9,14 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import {
   canSaveDraft,
+  closureCheckKey,
   createDraft,
   DraftAction,
   draftReducer,
   sameInput,
   toItineraryInput,
 } from '../pages/itineraryDraft';
+import useConflictCheck from './useConflictCheck';
 import { ApiError } from '../services/api';
 import {
   createItinerary,
@@ -93,6 +95,14 @@ export default function useItineraryEditor(id = null, { initial = null } = {}) {
   // Impede dois envios seguidos antes de o React atualizar `mutation`.
   const busy = useRef(false);
 
+  const status = loaded?.attempt === attempt ? loaded.status : EditorStatus.LOADING;
+  // Aviso de local fechado (#88). Um roteiro recém-criado já chega com os avisos do backend.
+  const conflicts = useConflictCheck(draft, dispatch, {
+    enabled: status === EditorStatus.READY,
+    initialCheckedKey: seeded ? closureCheckKey(draft) : null,
+  });
+  const { markChecked } = conflicts;
+
   useEffect(() => {
     if (!id || (seeded && attempt === 0)) return undefined;
     const controller = new AbortController();
@@ -104,8 +114,11 @@ export default function useItineraryEditor(id = null, { initial = null } = {}) {
         const places = await fetchPlaceNames(placeIds, signal);
         if (signal.aborted) return;
         const action = loadAction(itinerary, places);
+        const loadedDraft = draftReducer(createDraft(), action);
         dispatch(action);
-        setSavedInput(toItineraryInput(draftReducer(createDraft(), action)));
+        setSavedInput(toItineraryInput(loadedDraft));
+        // O GET já devolve os avisos de fechamento calculados: não precisa validar de novo.
+        markChecked(closureCheckKey(loadedDraft));
         setLoaded({ attempt, status: EditorStatus.READY, error: null });
       } catch (error) {
         if (signal.aborted) return;
@@ -115,11 +128,10 @@ export default function useItineraryEditor(id = null, { initial = null } = {}) {
       }
     })();
     return () => controller.abort();
-  }, [id, seeded, attempt]);
+  }, [id, seeded, attempt, markChecked]);
 
   const retry = useCallback(() => setAttempt((current) => current + 1), []);
 
-  const status = loaded?.attempt === attempt ? loaded.status : EditorStatus.LOADING;
   const isDirty = savedInput !== null && !sameInput(savedInput, toItineraryInput(draft));
   const canSave = status === EditorStatus.READY && canSaveDraft(draft);
 
@@ -141,6 +153,7 @@ export default function useItineraryEditor(id = null, { initial = null } = {}) {
         input,
         warnings: saved.stops.map((stop) => stop.conflictWarning),
       });
+      markChecked(closureCheckKey(input));
       setMutation({ status: Mutation.IDLE, error: null });
       return saved;
     } catch (error) {
@@ -149,7 +162,7 @@ export default function useItineraryEditor(id = null, { initial = null } = {}) {
     } finally {
       busy.current = false;
     }
-  }, [canSave, draft, savedId]);
+  }, [canSave, draft, savedId, markChecked]);
 
   // Devolve true se excluiu. Um roteiro ainda não salvo não tem o que excluir.
   const remove = useCallback(async () => {
@@ -183,6 +196,8 @@ export default function useItineraryEditor(id = null, { initial = null } = {}) {
   return {
     draft,
     status,
+    // Conferência dos horários de funcionamento: status (idle, checking, error), error, retry.
+    closureCheck: { status: conflicts.status, error: conflicts.error, retry: conflicts.retry },
     loadError: status === EditorStatus.ERROR ? loaded.error : null,
     retry,
     savedId,
