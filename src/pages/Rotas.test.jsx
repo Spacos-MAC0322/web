@@ -11,7 +11,7 @@ import {
   listItineraries,
   replaceItinerary,
 } from '../services/itineraries';
-import { fetchPlaceDetail } from '../services/places';
+import { fetchPlaceDetail, fetchPlacesByText } from '../services/places';
 import { formatItineraryDate, itineraryPath, stopCountText } from './itineraryFormat';
 import Roteiro from './Roteiro';
 import Rotas from './Rotas';
@@ -26,6 +26,7 @@ vi.mock('../services/itineraries', () => ({
 vi.mock('../services/places', async (importOriginal) => ({
   ...(await importOriginal()),
   fetchPlaceDetail: vi.fn(),
+  fetchPlacesByText: vi.fn(),
 }));
 
 const LOGGED_IN = {
@@ -173,6 +174,39 @@ describe('editor de roteiro', () => {
     expect(await screen.findByRole('button', { name: 'Salvar alterações' })).toBeDisabled();
     expect(screen.getByRole('status')).toHaveTextContent('Todas as alterações foram salvas');
     expect(fetchItinerary).not.toHaveBeenCalled();
+  });
+
+  it('busca um espaço, adiciona como parada com horário e cria o roteiro', async () => {
+    fetchPlacesByText.mockResolvedValue([
+      { id: 'museu', name: 'Museu Afro Brasil', category: 'Museu', neighborhood: 'Moema' },
+    ]);
+    createItinerary.mockResolvedValue({ ...SAVED, stops: [stop('museu', { startTime: '10:00' })] });
+    renderAt('/rotas/novo');
+
+    await userEvent.type(screen.getByLabelText('Nome do passeio'), 'Sábado no centro');
+    await userEvent.type(
+      screen.getByRole('searchbox', { name: 'Buscar espaços para adicionar ao roteiro' }),
+      'museu{Enter}',
+    );
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Adicionar Museu Afro Brasil ao roteiro' }),
+    );
+
+    const added = screen.getByRole('listitem', { name: 'Parada 1: Museu Afro Brasil' });
+    expect(screen.getByText('1 de 50')).toBeInTheDocument();
+    await userEvent.type(within(added).getByLabelText('Chegada'), '10:00');
+    await userEvent.click(screen.getByRole('button', { name: 'Criar roteiro' }));
+
+    expect(createItinerary).toHaveBeenCalledWith({
+      title: 'Sábado no centro',
+      date: null,
+      stops: [{ placeId: 'museu', startTime: '10:00', endTime: null, eventId: null }],
+    });
+    await waitFor(() => expect(screen.getByTestId('path')).toHaveTextContent('/rotas/abc'));
+    expect(
+      await screen.findByRole('listitem', { name: 'Parada 1: Museu Afro Brasil' }),
+    ).toBeInTheDocument();
+    expect(fetchPlaceDetail).not.toHaveBeenCalled();
   });
 
   it('abre um roteiro salvo, reordena e salva', async () => {

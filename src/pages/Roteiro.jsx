@@ -3,6 +3,7 @@
 // com horário de chegada e saída. Salvar cria (POST) ou substitui (PUT) o roteiro inteiro.
 import { useEffect, useId } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import ItineraryPlacePicker from '../components/ItineraryPlacePicker';
 import ItineraryTimeline from '../components/ItineraryTimeline';
 import RequestError from '../components/RequestError';
 import { AuthStatus, useAuth } from '../hooks/useAuth';
@@ -82,8 +83,7 @@ function ItineraryEditor({ id, initial }) {
     );
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSave = async () => {
     const wasNew = editor.isNew;
     const saved = await editor.save();
     // O roteiro novo ganha endereço próprio; o editor de lá começa com o que já se sabe.
@@ -102,8 +102,10 @@ function ItineraryEditor({ id, initial }) {
 
   const hasMissingPlace = draft.stops.some((stop) => draft.places[stop.placeId]?.missing);
 
+  // <div>, não <form>: a busca de locais é um formulário próprio, e HTML não permite um
+  // formulário dentro de outro. Salvar acontece só pelo botão.
   return (
-    <form className={styles.page} onSubmit={handleSubmit} noValidate>
+    <div className={styles.page}>
       <BackLink />
       <header className={styles.header}>
         <h1 className={styles.title}>{draft.title.trim() || (editor.isNew ? 'Novo roteiro' : 'Roteiro')}</h1>
@@ -160,6 +162,12 @@ function ItineraryEditor({ id, initial }) {
         />
       </section>
 
+      <ItineraryPlacePicker
+        onAdd={editor.addStop}
+        disabled={busy}
+        isFull={draft.stops.length >= MAX_STOPS}
+      />
+
       {editor.error && (
         <RequestError error={editor.error} fallbackMessage={SAVE_ERROR} />
       )}
@@ -186,15 +194,16 @@ function ItineraryEditor({ id, initial }) {
             </button>
           )}
           <button
-            type="submit"
+            type="button"
             className={styles.primaryButton}
+            onClick={handleSave}
             disabled={!editor.canSave || !editor.isDirty || hasMissingPlace}
           >
             {editor.isNew ? 'Criar roteiro' : 'Salvar alterações'}
           </button>
         </div>
       </div>
-    </form>
+    </div>
   );
 }
 
