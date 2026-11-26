@@ -179,7 +179,7 @@ function ItineraryEditor({ id, initial }) {
       )}
 
       <div className={styles.footer}>
-        <p className={styles.saveStatus} role="status">
+        <p className={styles.saveStatus} role="status" data-testid="save-status">
           <SaveStatus editor={editor} />
         </p>
         <div className={styles.footerActions}>

@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthContext, AuthStatus } from '../hooks/useAuth';
 import { ApiError, ApiErrorKind } from '../services/api';
 import { fetchPlaceDetail } from '../services/places';
 import Lugar from './Lugar';
@@ -25,14 +26,19 @@ const PLACE = {
   events: [],
 };
 
+// Visitante sem sessão: o botão "Adicionar ao roteiro" precisa do AuthContext.
+const ANONYMOUS = { user: null, status: AuthStatus.ANONYMOUS, isAuthenticated: false };
+
 function renderAt(path = '/lugar/mapas_saas%3Aspace%3A31') {
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/lugar/:id" element={<Lugar />} />
-        <Route path="/explorar" element={<p>Página Explorar</p>} />
-      </Routes>
-    </MemoryRouter>,
+    <AuthContext value={ANONYMOUS}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/lugar/:id" element={<Lugar />} />
+          <Route path="/explorar" element={<p>Página Explorar</p>} />
+        </Routes>
+      </MemoryRouter>
+    </AuthContext>,
   );
 }
 

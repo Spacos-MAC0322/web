@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import api from './api';
 import {
+  addPlaceToItinerary,
   createItinerary,
   deleteItinerary,
   fetchItinerary,
@@ -192,6 +193,51 @@ describe('services/itineraries', () => {
       { date: INPUT.date, stops: API_BODY.stops },
       { signal: undefined },
     );
+  });
+
+  it('addPlaceToItinerary lê o roteiro e acrescenta o espaço como última parada', async () => {
+    vi.spyOn(api, 'get').mockResolvedValue({ data: API_ITINERARY });
+    const put = vi.spyOn(api, 'put').mockResolvedValue({ data: API_ITINERARY });
+
+    await expect(addPlaceToItinerary('abc', 'teatro')).resolves.toEqual(ITINERARY);
+
+    expect(put.mock.calls[0][0]).toBe('/api/itineraries/abc');
+    expect(put.mock.calls[0][1]).toEqual({
+      title: 'Sábado no centro',
+      date: '2026-11-28',
+      stops: [
+        {
+          place_id: 'mapas_saas:space:1',
+          order: 1,
+          planned_start_time: '10:00',
+          planned_end_time: '11:30',
+          event_id: 'evento-7',
+        },
+        {
+          place_id: 'mapas_saas:space:65',
+          order: 2,
+          planned_start_time: '14:00',
+          planned_end_time: null,
+          event_id: null,
+        },
+        { place_id: 'teatro', order: 3, planned_start_time: null, planned_end_time: null, event_id: null },
+      ],
+    });
+  });
+
+  it('addPlaceToItinerary recusa roteiro cheio sem enviar nada', async () => {
+    const full = {
+      ...API_ITINERARY,
+      stops: Array.from({ length: 50 }, (_, i) => ({ place_id: `p${i}`, order: i + 1 })),
+    };
+    vi.spyOn(api, 'get').mockResolvedValue({ data: full });
+    const put = vi.spyOn(api, 'put');
+
+    await expect(addPlaceToItinerary('abc', 'teatro')).rejects.toMatchObject({
+      name: 'ApiError',
+      message: 'Este roteiro já tem 50 paradas, o limite.',
+    });
+    expect(put).not.toHaveBeenCalled();
   });
 
   it('propaga o erro da API sem alterá-lo', async () => {

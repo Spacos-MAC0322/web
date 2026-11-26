@@ -69,14 +69,22 @@ async function fetchPlaceNames(placeIds, signal) {
 export default function useItineraryEditor(id = null, { initial = null } = {}) {
   // Decidido uma vez, ao montar: `initial` mudar depois (ex.: a página limpar o state da
   // navegação) não pode recarregar o roteiro por cima das edições.
-  const [seeded] = useState(() => Boolean(id && initial?.itinerary?.id === id));
-  const [draft, dispatch] = useReducer(draftReducer, seeded ? initial : null, initDraft);
+  // 'saved': o roteiro `id` recém-criado; 'new': um roteiro novo que já começa com paradas
+  // (ex.: "Novo roteiro com este lugar", na página do lugar).
+  const [seedMode] = useState(() => {
+    if (!initial?.itinerary) return null;
+    if (!id) return 'new';
+    return initial.itinerary.id === id ? 'saved' : null;
+  });
+  const seeded = seedMode === 'saved';
+  const [draft, dispatch] = useReducer(draftReducer, seedMode ? initial : null, initDraft);
   const [savedId, setSavedId] = useState(id);
   // O que está salvo no backend, no formato do envio: compará-lo ao rascunho diz se há
-  // alterações pendentes.
-  const [savedInput, setSavedInput] = useState(() =>
-    id && !seeded ? null : toItineraryInput(draft),
-  );
+  // alterações pendentes. Um roteiro novo começa "vazio", mesmo que já tenha paradas.
+  const [savedInput, setSavedInput] = useState(() => {
+    if (id && !seeded) return null;
+    return toItineraryInput(seedMode === 'new' ? createDraft() : draft);
+  });
   const [attempt, setAttempt] = useState(0);
   const [loaded, setLoaded] = useState(() =>
     id && !seeded ? null : { attempt: 0, status: EditorStatus.READY, error: null },

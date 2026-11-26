@@ -166,13 +166,13 @@ describe('editor de roteiro', () => {
 
     await userEvent.type(screen.getByLabelText('Nome do passeio'), 'Domingo');
     expect(screen.getByRole('heading', { level: 1, name: 'Domingo' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('Alterações não salvas');
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Alterações não salvas');
     await userEvent.click(create);
 
     expect(createItinerary).toHaveBeenCalledWith({ title: 'Domingo', date: null, stops: [] });
     await waitFor(() => expect(screen.getByTestId('path')).toHaveTextContent('/rotas/abc'));
     expect(await screen.findByRole('button', { name: 'Salvar alterações' })).toBeDisabled();
-    expect(screen.getByRole('status')).toHaveTextContent('Todas as alterações foram salvas');
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Todas as alterações foram salvas');
     expect(fetchItinerary).not.toHaveBeenCalled();
   });
 
@@ -209,6 +209,28 @@ describe('editor de roteiro', () => {
     expect(fetchPlaceDetail).not.toHaveBeenCalled();
   });
 
+  it('começa um roteiro novo com o lugar vindo da página de detalhes', async () => {
+    createItinerary.mockResolvedValue({ ...SAVED, stops: [stop('museu')] });
+    renderAt({
+      pathname: '/rotas/novo',
+      state: {
+        itinerary: { title: '', date: null, stops: [{ placeId: 'museu' }] },
+        places: { museu: { name: 'Museu Afro Brasil', category: 'Museu' } },
+      },
+    });
+
+    expect(screen.getByRole('listitem', { name: 'Parada 1: Museu Afro Brasil' })).toBeInTheDocument();
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Alterações não salvas');
+    await userEvent.type(screen.getByLabelText('Nome do passeio'), 'Museus');
+    await userEvent.click(screen.getByRole('button', { name: 'Criar roteiro' }));
+    expect(createItinerary).toHaveBeenCalledWith({
+      title: 'Museus',
+      date: null,
+      stops: [{ placeId: 'museu', startTime: null, endTime: null, eventId: null }],
+    });
+    expect(fetchPlaceDetail).not.toHaveBeenCalled();
+  });
+
   it('abre um roteiro salvo, reordena e salva', async () => {
     fetchItinerary.mockResolvedValue(SAVED);
     replaceItinerary.mockResolvedValue({ ...SAVED, stops: [SAVED.stops[1], SAVED.stops[0]] });
@@ -239,7 +261,7 @@ describe('editor de roteiro', () => {
       ],
     });
     await waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent('Todas as alterações foram salvas'),
+      expect(screen.getByTestId('save-status')).toHaveTextContent('Todas as alterações foram salvas'),
     );
   });
 
@@ -257,7 +279,7 @@ describe('editor de roteiro', () => {
 
     expect(await screen.findByText('Espaço não encontrado: teatro.')).toBeInTheDocument();
     expect(title).toHaveValue('Outro nome');
-    expect(screen.getByRole('status')).toHaveTextContent('Alterações não salvas');
+    expect(screen.getByTestId('save-status')).toHaveTextContent('Alterações não salvas');
   });
 
   it('não deixa salvar com parada indisponível', async () => {

@@ -3,7 +3,8 @@
 // GET/PUT/DELETE /api/itineraries/{id} e POST /api/itineraries/validate.
 // Os componentes trabalham só com o formato daqui (camelCase); o formato da API
 // (snake_case) fica restrito a este arquivo.
-import api from './api';
+import { MAX_STOPS } from '../pages/itineraryDraft';
+import api, { ApiError, ApiErrorKind } from './api';
 
 function itineraryPath(id) {
   return `/api/itineraries/${encodeURIComponent(id)}`;
@@ -87,6 +88,26 @@ export async function replaceItinerary(id, input, { signal } = {}) {
 
 export async function deleteItinerary(id, { signal } = {}) {
   await api.delete(itineraryPath(id), { signal });
+}
+
+// Acrescenta um espaço como última parada de um roteiro salvo, sem horário, mantendo as
+// demais paradas como estão. O PUT substitui o roteiro inteiro, por isso ele é lido antes.
+export async function addPlaceToItinerary(id, placeId, { signal } = {}) {
+  const itinerary = await fetchItinerary(id, { signal });
+  if (itinerary.stops.length >= MAX_STOPS) {
+    throw new ApiError(`Este roteiro já tem ${MAX_STOPS} paradas, o limite.`, {
+      kind: ApiErrorKind.CLIENT,
+    });
+  }
+  return replaceItinerary(
+    id,
+    {
+      title: itinerary.title,
+      date: itinerary.date,
+      stops: [...itinerary.stops, { placeId, startTime: null, endTime: null, eventId: null }],
+    },
+    { signal },
+  );
 }
 
 // Confere os horários sem salvar. Exige data; devolve os avisos na mesma ordem das paradas.

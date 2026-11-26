@@ -183,6 +183,15 @@ export function canSaveDraft(state) {
   );
 }
 
+// Fim de um arrasto (@dnd-kit): a parada `activeKey` foi solta sobre `overKey`. Devolve
+// as posições para MOVE_STOP, ou null se soltou fora da lista ou no mesmo lugar.
+export function dragMove(stops, activeKey, overKey) {
+  if (!overKey || activeKey === overKey) return null;
+  const from = stops.findIndex((stop) => stop.key === activeKey);
+  const to = stops.findIndex((stop) => stop.key === overKey);
+  return from < 0 || to < 0 ? null : { from, to };
+}
+
 // Ids de locais ainda sem nome conhecido, para buscar os detalhes de cada um.
 export function unnamedPlaceIds(state) {
   const ids = new Set(state.stops.map((stop) => stop.placeId));

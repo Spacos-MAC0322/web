@@ -4,6 +4,7 @@ import {
   createDraft,
   DraftAction,
   draftReducer,
+  dragMove,
   MAX_STOPS,
   MAX_TITLE_LENGTH,
   stopTimeError,
@@ -265,6 +266,27 @@ describe('stopTimeError e canSaveDraft', () => {
     ].reduce(draftReducer, titled);
     expect(canSaveDraft(inverted)).toBe(false);
     expect(canSaveDraft(apply({ type: DraftAction.SET_TITLE, title: '   ' }))).toBe(false);
+  });
+});
+
+describe('dragMove', () => {
+  const stops = [{ key: 'a' }, { key: 'b' }, { key: 'c' }];
+
+  it.each([
+    ['a', 'c', { from: 0, to: 2 }],
+    ['c', 'a', { from: 2, to: 0 }],
+    ['b', 'c', { from: 1, to: 2 }],
+  ])('soltar %s sobre %s move para a posição dele', (active, over, expected) => {
+    expect(dragMove(stops, active, over)).toEqual(expected);
+  });
+
+  it.each([
+    ['a', null],
+    ['a', 'a'],
+    ['a', 'sumiu'],
+    ['sumiu', 'a'],
+  ])('ignora %s solto sobre %s', (active, over) => {
+    expect(dragMove(stops, active, over)).toBeNull();
   });
 });
 

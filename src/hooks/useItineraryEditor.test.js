@@ -113,6 +113,20 @@ describe('useItineraryEditor: roteiro novo', () => {
     expect(createItinerary).toHaveBeenCalledTimes(1);
   });
 
+  it('pode começar com paradas, como alterações ainda não salvas', () => {
+    const { result } = renderHook(() =>
+      useItineraryEditor(null, {
+        initial: { itinerary: { title: '', date: null, stops: [stop('museu')] }, places: { museu: MUSEU } },
+      }),
+    );
+    expect(result.current.status).toBe(EditorStatus.READY);
+    expect(result.current.isNew).toBe(true);
+    expect(result.current.isDirty).toBe(true);
+    expect(result.current.draft.stops.map((item) => item.placeId)).toEqual(['museu']);
+    expect(result.current.draft.places.museu.name).toBe('Museu Afro Brasil');
+    expect(fetchItinerary).not.toHaveBeenCalled();
+  });
+
   it('não salva sem título', async () => {
     const { result } = renderHook(() => useItineraryEditor());
     await act(async () => {

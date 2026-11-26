@@ -113,6 +113,14 @@ describe('ItineraryTimeline', () => {
     expect(screen.getByRole('link', { name: 'Local sem nome' })).toBeInTheDocument();
   });
 
+  it('cada parada tem uma alça de arrastar acessível pelo teclado', () => {
+    renderTimeline();
+    const handle = screen.getByRole('button', { name: 'Arrastar a parada 1 (Museu Afro Brasil)' });
+    expect(handle).toHaveAttribute('aria-roledescription', 'parada arrastável');
+    expect(handle).toHaveAttribute('tabindex', '0');
+    expect(handle).toHaveAccessibleDescription(/pressione espaço ou Enter para pegar a parada/);
+  });
+
   it('desativa tudo enquanto o roteiro é salvo', () => {
     renderTimeline({ disabled: true });
     for (const button of screen.getAllByRole('button')) expect(button).toBeDisabled();
