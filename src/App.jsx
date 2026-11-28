@@ -5,11 +5,10 @@ import Descobrir from './pages/Descobrir';
 import Explorar from './pages/Explorar';
 import Lugar from './pages/Lugar';
 import Login from './pages/Login';
+import Roteiro from './pages/Roteiro';
+import Rotas from './pages/Rotas';
 import Salvos from './pages/Salvos';
 import './App.css';
-
-// Mocks provisórios para as páginas
-const Rotas = () => <h1>Planejamento de Rotas :o</h1>;
 
 function App() {
   return (
@@ -20,6 +19,8 @@ function App() {
             <Route index element={<Descobrir />} />
             <Route path="explorar" element={<Explorar />} />
             <Route path="rotas" element={<Rotas />} />
+            <Route path="rotas/novo" element={<Roteiro />} />
+            <Route path="rotas/:id" element={<Roteiro />} />
             <Route path="salvos" element={<Salvos />} />
             <Route path="lugar/:id" element={<Lugar />} />
             <Route path="login" element={<Login />} />

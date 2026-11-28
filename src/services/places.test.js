@@ -6,12 +6,46 @@ import {
   fetchFilterOptions,
   fetchNearbyPlaces,
   fetchPlaceDetail,
+  fetchPlacesByText,
   fetchPlacesInBounds,
   placePath,
   toBoundsParams,
 } from './places';
 
 const bounds = (south, west, north, east) => new LatLngBounds([south, west], [north, east]);
+
+describe('fetchPlacesByText', () => {
+  it('consulta GET /api/search só com o texto, sem área do mapa', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({
+      data: [
+        {
+          id: 'museu',
+          name: 'Museu Afro Brasil',
+          primary_category: 'Museu',
+          neighborhood: 'Moema',
+          location: { type: 'Point', coordinates: [-46.65, -23.58] },
+        },
+      ],
+    });
+    const { signal } = new AbortController();
+
+    const places = await fetchPlacesByText('  museu ', { signal });
+
+    expect(get).toHaveBeenCalledWith('/api/search', {
+      params: { q: 'museu' },
+      paramsSerializer: { indexes: null },
+      signal,
+    });
+    expect(places).toEqual([
+      expect.objectContaining({
+        id: 'museu',
+        name: 'Museu Afro Brasil',
+        category: 'Museu',
+        neighborhood: 'Moema',
+      }),
+    ]);
+  });
+});
 
 describe('toBoundsParams', () => {
   it('converte os limites do Leaflet nos parâmetros do backend, com 5 casas decimais', () => {

@@ -1,0 +1,120 @@
+/* src/components/AddToItinerary.module.css */
+.wrapper {
+  position: relative;
+}
+
+.toggle,
+.newButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.toggle {
+  border: 1px solid var(--color-green);
+  background: transparent;
+  color: var(--color-green);
+}
+
+.toggle:hover {
+  background: var(--accent-bg);
+}
+
+.newButton {
+  justify-content: center;
+  width: 100%;
+  border: none;
+  background: var(--color-green);
+  color: var(--color-cream);
+}
+
+.newButton:hover {
+  background: var(--color-green-hover);
+}
+
+.toggle:focus-visible,
+.newButton:focus-visible,
+.choice:focus-visible,
+.link:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1000; /* acima do mapa e dos controles do Leaflet */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(340px, calc(100vw - 32px));
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice:hover:not(:disabled) {
+  background: var(--accent-bg);
+}
+
+.choice:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.choiceTitle {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.choiceMeta,
+.note {
+  color: var(--color-graphite);
+  font-size: 14px;
+}
+
+.success {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.link {
+  color: var(--color-green);
+  font-weight: 600;
+}

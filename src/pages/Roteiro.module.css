@@ -1,0 +1,175 @@
+/* src/pages/Roteiro.module.css */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 880px;
+}
+
+.backLink {
+  align-self: flex-start;
+  color: var(--color-green);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.backLink:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 20px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.input {
+  padding: 12px 14px;
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 1px;
+}
+
+.stops {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 26px;
+}
+
+.count {
+  color: var(--color-graphite);
+  font-size: 15px;
+}
+
+.hint {
+  color: var(--color-graphite);
+  font-size: 15px;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.saveStatus {
+  color: var(--color-graphite);
+  font-size: 15px;
+}
+
+.footerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primaryButton,
+.dangerButton {
+  padding: 12px 24px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.primaryButton {
+  border: none;
+  background: var(--color-green);
+  color: var(--color-cream);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--color-green-hover);
+}
+
+.dangerButton {
+  border: 1px solid var(--error-text);
+  background: transparent;
+  color: var(--error-text);
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: rgba(143, 63, 40, 0.08);
+}
+
+.primaryButton:focus-visible,
+.dangerButton:focus-visible {
+  outline: 3px solid var(--color-mustard);
+  outline-offset: 2px;
+}
+
+.primaryButton:disabled,
+.dangerButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.stateTitle {
+  margin: 0;
+}
+
+.loading {
+  font-size: 18px;
+}

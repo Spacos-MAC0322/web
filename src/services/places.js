@@ -95,6 +95,12 @@ export function fetchNearbyPlaces({ lat, lng, radiusKm }, { signal, filters } = 
   return searchPlaces(filters, { lat, lng, radius_km: radiusKm }, { signal });
 }
 
+// Espaços cujo nome, bairro, categoria ou região contém `query`, em ordem alfabética, em
+// toda a cidade (sem área do mapa). Usado para adicionar paradas a um roteiro (#87).
+export function fetchPlacesByText(query, { signal } = {}) {
+  return searchPlaces({ ...EMPTY_FILTERS, q: query }, {}, { signal });
+}
+
 // Opções do painel de filtros: os grupos de "O que você quer ver?" com quantos espaços há
 // em cada um e quantos espaços têm gratuidade ou preço conhecidos (`pricedPlaces`). Sem
 // nenhum, os filtros de preço ficam escondidos: não teriam resultado.

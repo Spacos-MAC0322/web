@@ -14,6 +14,13 @@
   margin-top: clamp(0px, 3vw, 44px);
 }
 
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
 .backLink {
   color: var(--color-green);
   font-size: 14px;

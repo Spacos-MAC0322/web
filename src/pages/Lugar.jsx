@@ -5,6 +5,7 @@
 // GET /api/places/{id}, que já reúne o dado aberto e a curadoria (DA06).
 import { useCallback, useId } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import AddToItinerary from '../components/AddToItinerary';
 import EventList from '../components/EventList';
 import FavoriteButton from '../components/FavoriteButton';
 import PlaceFacts from '../components/PlaceFacts';
@@ -111,7 +112,10 @@ function PlaceDetail({ place }) {
         <nav aria-label="Voltar">
           <BackLink />
         </nav>
-        <FavoriteButton placeId={place.id} placeName={place.name} variant="pill" />
+        <div className={styles.toolbarActions}>
+          <AddToItinerary place={place} />
+          <FavoriteButton placeId={place.id} placeName={place.name} variant="pill" />
+        </div>
       </div>
       <div className={styles.columns}>
         <PlaceIntro place={place} titleId={titleId} />
